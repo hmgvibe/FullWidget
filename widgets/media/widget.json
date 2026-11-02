@@ -1,0 +1,17 @@
+{
+  "id": "fullwidget.media",
+  "name": { "zh-TW": "媒體控制", "zh-CN": "媒体控制", "en": "Now playing" },
+  "description": { "zh-TW": "正在播放的歌名和封面，可以播放、暫停、切換曲目", "zh-CN": "正在播放的歌名和封面，可以播放、暂停、切换曲目", "en": "What's playing, with play, pause and skip" },
+  "version": "1.1.0",
+  "author": "FullWidget",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "media",
+  "preview": "preview/{theme}.{lang}.webp",
+  "size": { "width": 340, "height": 136, "minWidth": 200, "minHeight": 64, "maxWidth": 700, "maxHeight": 520, "grow": 1 },
+  "permissions": ["media"],
+  "settings": [
+    { "key": "progress", "type": "toggle", "label": { "zh-TW": "顯示進度", "zh-CN": "显示进度", "en": "Show progress" }, "default": true },
+    { "key": "app", "type": "toggle", "label": { "zh-TW": "顯示是哪個程式在播放", "zh-CN": "显示是哪个程序在播放", "en": "Show which app is playing" }, "default": true }
+  ]
+}

@@ -1,0 +1,98 @@
+# Builds the two release zips on GitHub, signs FullWidget.exe and FullWidget.dll with SignPath, and
+# puts the zips into a draft release for a tag like v1.2.0 (publish it by hand on GitHub).
+#
+# Signing runs once the repository has these settings (Settings → Secrets and variables → Actions):
+#   variable SIGNPATH_ORGANIZATION_ID   from SignPath
+#   secret   SIGNPATH_API_TOKEN         a SignPath CI user's token
+# Without them the zips are built unsigned (handy for checking the build).
+# Run by hand (Actions → Release → Run workflow): builds and keeps the zips as a workflow artifact.
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write # the draft release
+  actions: read   # SignPath fetches the files to sign from this run
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Check the tag matches the version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          [xml]$p = Get-Content src/FullWidget/FullWidget.csproj
+          $v = $p.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ("v$v" -ne "${{ github.ref_name }}") { throw "tag ${{ github.ref_name }} but FullWidget.csproj says $v" }
+
+      - name: Build
+        shell: pwsh
+        run: ./build/publish.ps1 -Step build
+
+      # Only our own files are signed; the .NET and WebView2 files are already signed by Microsoft.
+      - name: Upload the files to sign
+        id: unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned
+          path: |
+            dist/*/FullWidget/FullWidget.exe
+            dist/*/FullWidget/FullWidget.dll
+          if-no-files-found: error
+
+      - name: Sign with SignPath
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: FullWidget
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+
+      - name: Put the signed files back
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        shell: pwsh
+        run: |
+          Copy-Item signed/* dist/ -Recurse -Force
+          foreach ($f in Get-ChildItem dist/*/FullWidget/FullWidget.exe, dist/*/FullWidget/FullWidget.dll) {
+            $s = Get-AuthenticodeSignature $f.FullName
+            if ($s.Status -ne 'Valid') { throw "$($f.FullName): signature $($s.Status)" }
+            Write-Host "$($f.FullName): signed by $($s.SignerCertificate.Subject)"
+          }
+
+      - name: Zip
+        shell: pwsh
+        run: ./build/publish.ps1 -Step pack
+
+      - name: Keep the zips (manual run)
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: zips
+          path: dist/*.zip
+
+      - name: Draft release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $notes = @"
+          **下載 / Download**
+          - ``FullWidget-*-win-x64.zip``：需要 [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) / needs the .NET 9 Desktop Runtime
+          - ``FullWidget-*-win-x64-full.zip``：不用另外安裝 / runs without installing anything
+
+          [Code signing policy](https://github.com/${{ github.repository }}#code-signing-policy) · [Privacy](https://github.com/${{ github.repository }}#privacy)
+          "@
+          gh release create $tag (Get-ChildItem dist/*.zip | Where-Object Name -like "FullWidget-$($tag.TrimStart('v'))-*").FullName --draft --title "FullWidget $($tag.TrimStart('v'))" --notes $notes

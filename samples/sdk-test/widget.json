@@ -1,0 +1,12 @@
+{
+  // Exercises every SDK call and logs PASS/FAIL lines to the FullWidget log.
+  "id": "sample.sdk-test",
+  "name": "SDK Test",
+  "version": "0.1.0",
+  "entry": "index.html",
+  "size": { "width": 320, "height": 220, "minWidth": 200, "minHeight": 120 },
+  "permissions": ["system", "network:api.open-meteo.com"],
+  "settings": [
+    { "key": "greeting", "type": "text", "label": "Greeting", "default": "hello" }
+  ],
+}

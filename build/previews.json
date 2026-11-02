@@ -1,0 +1,265 @@
+{
+  "_": "Sample content for the widget library pictures (build/make-previews.mjs). Values may be { \"zh-TW\", \"zh-CN\", \"en\" }.",
+  "fullwidget.weather": {
+    "settings": {
+      "city": {
+        "zh-TW": "台北",
+        "zh-CN": "上海",
+        "en": "London"
+      }
+    },
+    "network": true
+  },
+  "fullwidget.forecast": {
+    "settings": {
+      "city": {
+        "zh-TW": "台北",
+        "zh-CN": "上海",
+        "en": "London"
+      }
+    },
+    "network": true
+  },
+  "fullwidget.airquality": {
+    "settings": {
+      "city": {
+        "zh-TW": "台北",
+        "zh-CN": "上海",
+        "en": "London"
+      }
+    },
+    "network": true
+  },
+  "fullwidget.sunmoon": {
+    "settings": {
+      "city": {
+        "zh-TW": "台北",
+        "zh-CN": "上海",
+        "en": "London"
+      }
+    },
+    "network": true
+  },
+  "fullwidget.countdown": {
+    "settings": {
+      "title": {
+        "zh-TW": "新年",
+        "zh-CN": "新年",
+        "en": "New Year"
+      },
+      "date": "2027-01-01"
+    },
+    "storage": {
+      "start": "2026-10-01"
+    }
+  },
+  "fullwidget.notes": {
+    "storage": {
+      "text": {
+        "zh-TW": "週五前交設計稿\n買咖啡豆\n打電話給房東，問冷氣的事",
+        "zh-CN": "周五前交设计稿\n买咖啡豆\n给房东打电话，问空调的事",
+        "en": "Send the designs by Friday\nBuy coffee beans\nCall the landlord about the AC"
+      }
+    }
+  },
+  "fullwidget.todo": {
+    "storage": {
+      "items": {
+        "zh-TW": [
+          {
+            "id": "a",
+            "text": "回覆客戶郵件",
+            "done": true
+          },
+          {
+            "id": "b",
+            "text": "整理會議記錄",
+            "done": false
+          },
+          {
+            "id": "c",
+            "text": "預約牙醫",
+            "done": false
+          },
+          {
+            "id": "d",
+            "text": "繳電費",
+            "done": true
+          },
+          {
+            "id": "e",
+            "text": "讀完第三章",
+            "done": false
+          }
+        ],
+        "zh-CN": [
+          {
+            "id": "a",
+            "text": "回复客户邮件",
+            "done": true
+          },
+          {
+            "id": "b",
+            "text": "整理会议记录",
+            "done": false
+          },
+          {
+            "id": "c",
+            "text": "预约牙医",
+            "done": false
+          },
+          {
+            "id": "d",
+            "text": "交电费",
+            "done": true
+          },
+          {
+            "id": "e",
+            "text": "读完第三章",
+            "done": false
+          }
+        ],
+        "en": [
+          {
+            "id": "a",
+            "text": "Reply to the client",
+            "done": true
+          },
+          {
+            "id": "b",
+            "text": "Tidy up meeting notes",
+            "done": false
+          },
+          {
+            "id": "c",
+            "text": "Book the dentist",
+            "done": false
+          },
+          {
+            "id": "d",
+            "text": "Pay the power bill",
+            "done": true
+          },
+          {
+            "id": "e",
+            "text": "Finish chapter three",
+            "done": false
+          }
+        ]
+      }
+    }
+  },
+  "fullwidget.pomodoro": {
+    "storage": {
+      "state": {
+        "phase": "focus",
+        "running": false,
+        "endsAt": 0,
+        "remaining": 872000,
+        "done": 2,
+        "day": "{today}",
+        "count": 2
+      }
+    }
+  },
+  "fullwidget.timer": {
+    "storage": {
+      "state": {
+        "mode": "cd",
+        "cd": {
+          "duration": 600000,
+          "remaining": 387000,
+          "running": false,
+          "endsAt": 0,
+          "done": false
+        },
+        "sw": {
+          "running": false,
+          "startedAt": 0,
+          "elapsed": 0,
+          "laps": []
+        }
+      }
+    }
+  },
+  "fullwidget.network": {
+    "settings": {
+      "interval": 2
+    },
+    "warmup": 40
+  },
+  "fullwidget.pcinfo": {
+    "settings": {
+      "showName": false
+    }
+  },
+  "fullwidget.volume": {
+    "script": {
+      "zh-TW": "document.getElementById('dev').textContent = '喇叭 (Realtek Audio)'",
+      "zh-CN": "document.getElementById('dev').textContent = '扬声器 (Realtek Audio)'",
+      "en": "document.getElementById('dev').textContent = 'Speakers (Realtek Audio)'"
+    }
+  },
+  "fullwidget.usage": {
+    "settings": {
+      "span": 60
+    }
+  },
+  "fullwidget.habits": {
+    "script": "(() => { const d = (n) => dayKey(shift(new Date(), -n)); habits[0].done = [0,1,2,3,4,5,6,8,9,10,11,13].map(d); habits[1].done = [1,3,5,8,10,12].map(d); habits[2].done = [0,1,2,4,5,7,9].map(d); render(); })()"
+  },
+  "fullwidget.calculator": {
+    "script": "(() => { history = [{ expr: '1280×0.85', value: '1088' }, { expr: '(36+28)÷4', value: '16' }, { expr: '2499÷12', value: '208.25' }]; renderHistory(); document.getElementById('expr').value = '199×12+'; preview(); })()"
+  },
+  "fullwidget.rss": {
+    "network": true,
+    "script": {
+      "zh-TW": "(() => { feed = { url: 'https://example.com/feed', at: Date.now(), title: \"城市週報\", items: [{ title: \"市立圖書館延長週末開放時間，晚上十點才閉館\", link: 'https://example.com/', time: Date.now() - 12 * 60000 }, { title: \"河濱自行車道新增三處休息站\", link: 'https://example.com/', time: Date.now() - 47 * 60000 }, { title: \"今年秋季音樂節將在港邊舉行，連續三天免費入場\", link: 'https://example.com/', time: Date.now() - 95 * 60000 }, { title: \"老街修復工程完成，週六起恢復通行\", link: 'https://example.com/', time: Date.now() - 160 * 60000 }, { title: \"氣象站：下週起早晚溫差加大，出門記得帶外套\", link: 'https://example.com/', time: Date.now() - 230 * 60000 }] }; failed = false; render(); })()",
+      "zh-CN": "(() => { feed = { url: 'https://example.com/feed', at: Date.now(), title: \"城市周报\", items: [{ title: \"市立图书馆延长周末开放时间，晚上十点才闭馆\", link: 'https://example.com/', time: Date.now() - 12 * 60000 }, { title: \"河滨自行车道新增三处休息站\", link: 'https://example.com/', time: Date.now() - 47 * 60000 }, { title: \"今年秋季音乐节将在港边举行，连续三天免费入场\", link: 'https://example.com/', time: Date.now() - 95 * 60000 }, { title: \"老街修复工程完成，周六起恢复通行\", link: 'https://example.com/', time: Date.now() - 160 * 60000 }, { title: \"气象站：下周起早晚温差加大，出门记得带外套\", link: 'https://example.com/', time: Date.now() - 230 * 60000 }] }; failed = false; render(); })()",
+      "en": "(() => { feed = { url: 'https://example.com/feed', at: Date.now(), title: \"City Weekly\", items: [{ title: \"City library keeps its doors open until 10 pm on weekends\", link: 'https://example.com/', time: Date.now() - 12 * 60000 }, { title: \"Three new rest stops along the riverside bike path\", link: 'https://example.com/', time: Date.now() - 47 * 60000 }, { title: \"Autumn music festival comes to the harbour, free for all three days\", link: 'https://example.com/', time: Date.now() - 95 * 60000 }, { title: \"Old town restoration finished; streets reopen on Saturday\", link: 'https://example.com/', time: Date.now() - 160 * 60000 }, { title: \"Forecast: bigger swings between day and night from next week\", link: 'https://example.com/', time: Date.now() - 230 * 60000 }] }; failed = false; render(); })()"
+    }
+  },
+  "fullwidget.currency": {
+    "network": true
+  },
+  "fullwidget.dailyimage": {
+    "network": true,
+    "ready": "document.getElementById('img').classList.contains('ready')",
+    "script": {
+      "zh-TW": "(() => { data = { mkt: market(), at: Date.now(), images: [{ date: '20261102', url: '{photo:2-dawn-lake.jpg}', title: \"湖面上的第一道光\", copyright: \"山間湖泊的清晨 (© FullWidget)\", link: 'https://www.bing.com' }] }; index = 0; render(); })()",
+      "zh-CN": "(() => { data = { mkt: market(), at: Date.now(), images: [{ date: '20261102', url: '{photo:2-dawn-lake.jpg}', title: \"湖面上的第一道光\", copyright: \"山间湖泊的清晨 (© FullWidget)\", link: 'https://www.bing.com' }] }; index = 0; render(); })()",
+      "en": "(() => { data = { mkt: market(), at: Date.now(), images: [{ date: '20261102', url: '{photo:2-dawn-lake.jpg}', title: \"First light on the lake\", copyright: \"A mountain lake at dawn (© FullWidget)\", link: 'https://www.bing.com' }] }; index = 0; render(); })()"
+    }
+  },
+  "fullwidget.onthisday": {
+    "network": true
+  },
+  "fullwidget.media": {
+    "script": {
+      "zh-TW": "(() => { const svg = \"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#ff7a93'/><stop offset='1' stop-color='#ffc36b'/></linearGradient></defs><rect width='100' height='100' fill='url(#g)'/><circle cx='64' cy='36' r='15' fill='#fff6e0' opacity='.85'/><path d='M0 74 L28 58 L52 72 L78 55 L100 65 V100 H0Z' fill='#3a2140' opacity='.35'/><path d='M0 86 L36 74 L62 84 L100 76 V100 H0Z' fill='#3a2140' opacity='.5'/></svg>\"; s = { available: true, app: { id: '', name: '', icon: null }, title: '晴天的海邊', artist: '林間小路', album: '夏日記事', status: 'playing', playing: true, position: 77000, duration: 214000, updated: Date.now(), cover: 'data:image/svg+xml,' + encodeURIComponent(svg), can: { play: true, pause: true, toggle: true, next: true, previous: true, seek: true } }; render(); })()",
+      "zh-CN": "(() => { const svg = \"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#ff7a93'/><stop offset='1' stop-color='#ffc36b'/></linearGradient></defs><rect width='100' height='100' fill='url(#g)'/><circle cx='64' cy='36' r='15' fill='#fff6e0' opacity='.85'/><path d='M0 74 L28 58 L52 72 L78 55 L100 65 V100 H0Z' fill='#3a2140' opacity='.35'/><path d='M0 86 L36 74 L62 84 L100 76 V100 H0Z' fill='#3a2140' opacity='.5'/></svg>\"; s = { available: true, app: { id: '', name: '', icon: null }, title: '晴天的海边', artist: '林间小路', album: '夏日记事', status: 'playing', playing: true, position: 77000, duration: 214000, updated: Date.now(), cover: 'data:image/svg+xml,' + encodeURIComponent(svg), can: { play: true, pause: true, toggle: true, next: true, previous: true, seek: true } }; render(); })()",
+      "en": "(() => { const svg = \"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#ff7a93'/><stop offset='1' stop-color='#ffc36b'/></linearGradient></defs><rect width='100' height='100' fill='url(#g)'/><circle cx='64' cy='36' r='15' fill='#fff6e0' opacity='.85'/><path d='M0 74 L28 58 L52 72 L78 55 L100 65 V100 H0Z' fill='#3a2140' opacity='.35'/><path d='M0 86 L36 74 L62 84 L100 76 V100 H0Z' fill='#3a2140' opacity='.5'/></svg>\"; s = { available: true, app: { id: '', name: '', icon: null }, title: 'Seaside Morning', artist: 'The Long Roads', album: 'Summer Notes', status: 'playing', playing: true, position: 77000, duration: 214000, updated: Date.now(), cover: 'data:image/svg+xml,' + encodeURIComponent(svg), can: { play: true, pause: true, toggle: true, next: true, previous: true, seek: true } }; render(); })()"
+    },
+    "ready": "document.getElementById('art').classList.contains('has')"
+  },
+  "fullwidget.photoframe": {
+    "settings": {
+      "folder": "{root}/build/preview-photos",
+      "order": "name",
+      "subfolders": false
+    },
+    "ready": "(() => { const i = document.querySelector('.layer.on img'); return !!i && i.complete && i.naturalWidth > 0; })()"
+  },
+  "fullwidget.whitenoise": {
+    "script": "levels = { rain: 70, waves: 45, wind: 0, fire: 30, noise: 0 }; playing = true; render();"
+  },
+  "fullwidget.label": {
+    "settings": {
+      "note": {
+        "zh-TW": "2026年的目標",
+        "zh-CN": "2026年的目标",
+        "en": "Goal for 2026"
+      }
+    }
+  }
+}

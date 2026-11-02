@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden;
+    font-family: "Segoe UI Variable", "Microsoft JhengHei UI", sans-serif; user-select: none; }
+  .card {
+    position: absolute; inset: 20px; border-radius: 18px; padding: 18px 22px; box-sizing: border-box;
+    color: #fff; background: rgba(22, 24, 34, 0.62);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  }
+  body.card-mode .card { inset: 0; border-radius: 0; background: rgba(22, 24, 34, 0.25); box-shadow: none; }
+  .drag-appregion .card { app-region: drag; }
+  .time { font-size: 54px; font-weight: 600; letter-spacing: 1px; line-height: 1.1; }
+  .sub { opacity: .8; font-size: 15px; }
+  .bar { margin-top: 14px; height: 10px; border-radius: 5px;
+    background: linear-gradient(90deg, #ff4d6d, #ffd166, #06d6a0, #4cc9f0, #9b5de5); }
+  .dot { position: absolute; right: 22px; top: 22px; width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(76, 201, 240, .55); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="dot"></div>
+    <div class="time" id="t">--:--:--</div>
+    <div class="sub" id="s">小組件 #? · 透明測試</div>
+    <div class="bar"></div>
+  </div>
+<script>
+  const q = new URLSearchParams(location.search);
+  const drag = q.get("drag");
+  if (q.get("card") === "1") document.body.classList.add("card-mode");
+  if (drag === "appregion") document.body.classList.add("drag-appregion");
+  document.getElementById("s").textContent = `小組件 #${q.get("i")} · 透明測試 · ${drag}`;
+  const post = m => window.chrome?.webview?.postMessage(m);
+  document.querySelector(".card").addEventListener("mousedown", e => {
+    if (e.button !== 0 || drag === "appregion") return;
+    post({ type: drag === "native" ? "nativeDrag" : "drag" });
+  });
+  const tick = () => document.getElementById("t").textContent = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+  tick(); setInterval(tick, 1000);
+  post({ type: "ready" });
+</script>
+</body>
+</html>

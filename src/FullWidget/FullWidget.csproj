@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <!-- raw COM calls for the media controls (Providers/MediaSession.cs) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <AssemblyName>FullWidget</AssemblyName>
+    <RootNamespace>FullWidget</RootNamespace>
+    <Version>1.2.0</Version>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Product>FullWidget</Product>
+    <Company>FullWidget</Company>
+    <AssemblyTitle>FullWidget</AssemblyTitle>
+    <Description>FullWidget — desktop widgets for Windows</Description>
+    <Copyright>Copyright (C) 2026 hmgvibe. Licensed under the GPL-3.0.</Copyright>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- The WebView2 package also ships a WPF assembly we don't use. -->
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+
+  <!-- The same icon for the tray and windows (Shell/AppIcon.cs). -->
+  <ItemGroup>
+    <EmbeddedResource Include="app.ico" LogicalName="app.ico" />
+  </ItemGroup>
+
+  <!-- SDK files and built-in widgets ship next to the exe. -->
+  <ItemGroup>
+    <None Include="..\..\sdk\**" LinkBase="sdk" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\widgets\**" LinkBase="widgets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\ui\**" LinkBase="ui" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\templates\**" LinkBase="templates" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\docs\組件開發指南.md" Link="docs\組件開發指南.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\docs\widget-guide.en.md" Link="docs\widget-guide.en.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

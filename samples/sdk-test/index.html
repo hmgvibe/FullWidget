@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+    #out { flex: 1; overflow: auto; font-family: Consolas, monospace; white-space: pre-wrap; }
+    .pass { color: #06d6a0; } .fail { color: #ff6b6b; }
+    textarea { height: 40px; resize: none; background: rgba(255,255,255,.08); border: 1px solid var(--w-border); border-radius: 6px; padding: 4px; }
+  </style>
+</head>
+<body>
+  <div id="out"></div>
+  <textarea id="note" placeholder="type here"></textarea>
+  <script>
+    const out = document.getElementById("out");
+    const note = document.getElementById("note");
+    const timeout = (ms) => new Promise((r) => setTimeout(() => r(null), ms));
+    let fails = 0;
+
+    function check(name, ok, detail = "") {
+      if (!ok) fails++;
+      const line = `${ok ? "PASS" : "FAIL"} ${name} ${detail}`.trim();
+      out.insertAdjacentHTML("beforeend", `<div class="${ok ? "pass" : "fail"}"></div>`);
+      out.lastElementChild.textContent = line;
+      widget.log("SDKTEST " + line);
+    }
+
+    // Typing test: the note is saved on every keystroke.
+    widget.storage.get("note").then((v) => { note.value = v || ""; });
+    note.addEventListener("input", () => widget.storage.set("note", note.value));
+
+    (async () => {
+      check("boot", typeof widget === "object" && !!widget.instanceId, widget.instanceId);
+      check("frozen api", Object.isFrozen(widget) && Object.isFrozen(widget.storage));
+      check("settings.default", widget.settings.get("greeting") === "hello", JSON.stringify(widget.settings.get()));
+
+      await widget.storage.set("obj", { a: 1, b: [2, 3], s: "中文" });
+      const v = await widget.storage.get("obj");
+      check("storage.roundtrip", v && v.a === 1 && v.b[1] === 3 && v.s === "中文");
+      const launches = ((await widget.storage.get("launches")) || 0) + 1;
+      await widget.storage.set("launches", launches);
+      widget.log(`SDKTEST INFO launches=${launches}`);
+      check("storage.keys", (await widget.storage.keys()).includes("obj"));
+
+      const changed = new Promise((r) => widget.settings.onChange(r));
+      await widget.settings.set("greeting", "hi");
+      const s = await Promise.race([changed, timeout(2000)]);
+      check("settings.set+onChange", s && s.greeting === "hi");
+      await widget.settings.set("greeting", "hello");
+      try { await widget.settings.set("nope", 1); check("settings.unknownKey", false); }
+      catch (e) { check("settings.unknownKey", /unknown setting/.test(e.message), e.message); }
+
+      const data = await new Promise((resolve) => {
+        let off = () => {};
+        off = widget.system.subscribe(["cpu", "memory", "network", "disk", "battery"], (d) => {
+          if (d.cpu && d.memory && d.network) { off(); resolve(d); }
+        });
+        setTimeout(() => resolve(null), 4000);
+      });
+      check("system", data && typeof data.cpu.usage === "number" && data.memory.total > 0,
+        data ? `cpu=${data.cpu.usage}% mem=${data.memory.usage}% disks=${(data.disk || []).length} battery=${JSON.stringify(data.battery)}` : "no data");
+
+      try {
+        const r = await widget.fetch("https://api.open-meteo.com/v1/forecast?latitude=25.03&longitude=121.56&current=temperature_2m");
+        const j = await r.json();
+        check("fetch.allowed", r.ok && j.current && typeof j.current.temperature_2m === "number", `Taipei ${j.current && j.current.temperature_2m}°C`);
+      } catch (e) { check("fetch.allowed", false, e.message); }
+
+      try { await widget.fetch("https://example.com/"); check("fetch.denied", false, "request was allowed"); }
+      catch (e) { check("fetch.denied", /permission denied/.test(e.message), e.message); }
+
+      try { await widget.shell.open("https://example.com"); check("shell.denied", false, "was allowed"); }
+      catch (e) { check("shell.denied", /permission denied/.test(e.message), e.message); }
+
+      const size = await widget.window.setSize(340, 240);
+      check("window.setSize", size && size.width === 340 && size.height === 240, JSON.stringify(size));
+
+      try { await new Promise((res, rej) => { window.chrome.webview.postMessage({ id: 99999, m: "no.such" }); setTimeout(res, 300); }); check("unknown method ignored", true); }
+      catch (e) { check("unknown method ignored", false, e.message); }
+
+      check("appearance", typeof widget.appearance.get().style === "string", widget.appearance.get().style);
+      widget.log(`SDKTEST DONE fails=${fails}`);
+    })();
+  </script>
+</body>
+</html>
