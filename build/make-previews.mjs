@@ -3,6 +3,8 @@
 //
 //   dotnet build src/FullWidget            (the Debug build is used)
 //   node build/make-previews.mjs [widget-id ...]
+//   node build/make-previews.mjs --scale 2 --out site/assets/widgets   pictures for the website: 2 device
+//                                                         pixels per CSS pixel, written to <out>/<folder>/
 //   node build/make-previews.mjs --from market/widgets   widgets in another folder (e.g. the market's),
 //                                                         with sample content from that folder's ../previews.json
 //
@@ -21,9 +23,13 @@ const PORT = 9339;
 const LANGS = ["zh-TW", "zh-CN", "en"];
 const SCALE = 0.6;
 const argv = process.argv.slice(2);
-const fromAt = argv.indexOf("--from");
-const fromDir = fromAt >= 0 ? path.resolve(argv[fromAt + 1]) : null;
-const only = argv.filter((a, i) => fromAt < 0 || (i !== fromAt && i !== fromAt + 1));
+const opt = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : null; };
+const fromDir = opt("--from") ? path.resolve(opt("--from")) : null;
+// --scale N: N device pixels per CSS pixel, whatever the screen's scaling (default: 0.6 of the screen's pixels)
+const outScale = opt("--scale") ? Number(opt("--scale")) : null;
+const outDir = opt("--out") ? path.resolve(opt("--out")) : null;
+const valued = new Set(["--from", "--scale", "--out"]);
+const only = argv.filter((a, i) => !valued.has(a) && !valued.has(argv[i - 1]));
 const widgetsDir = fromDir || path.join(root, "widgets");
 
 const themes = fs.readdirSync(path.join(root, "sdk", "themes")).filter((d) => fs.existsSync(path.join(root, "sdk", "themes", d, "theme.json")));
@@ -99,10 +105,11 @@ async function settle(p, network) {
 
 async function capture(p, file) {
   const b = JSON.parse(await p.eval("JSON.stringify(document.body.getBoundingClientRect())"));
+  const scale = outScale ? outScale / (await p.eval("window.devicePixelRatio")) : SCALE;
   await p.send("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });
   const shot = await p.send("Page.captureScreenshot", {
     format: "webp", quality: 84, fromSurface: true,
-    clip: { x: b.x, y: b.y, width: b.width, height: b.height, scale: SCALE },
+    clip: { x: b.x, y: b.y, width: b.width, height: b.height, scale },
   });
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, Buffer.from(shot.result.data, "base64"));
@@ -133,7 +140,7 @@ try {
       // "{root}" in a sample value is this folder, e.g. the sample photos in build/preview-photos
       const val = (v) => (typeof v === "string" ? v.replaceAll("{root}", root) : v);
       const set = Object.entries(sample.settings || {}).map(([k, v]) => `setting ${inst.id} ${k} ${JSON.stringify(val(pick(v, lang)))}`);
-      cmd([`layer ${inst.id} top`, `move ${inst.id} 300 300`, ...set].join("; "));
+      cmd([`layer ${inst.id} top`, `move ${inst.id} ${process.env.PREVIEW_AT || "300 300"}`, ...(outScale ? [`shadow ${inst.id} off`] : []), ...set].join("; "));
       const host = `${m.id.replace(/[^a-z0-9-]/gi, "-").toLowerCase()}.widgets.local`;
       let p = await page(host, inst.id);
       if (sample.storage) {
@@ -151,7 +158,7 @@ try {
         // e.g. a picture that must finish loading
         if (sample.ready) for (let k = 0; k < 40 && !(await p.eval(sample.ready).catch(() => false)); k++) await sleep(250);
         if (sample.script || sample.ready) await sleep(500);
-        const file = path.join(widgetsDir, folder, "preview", `${theme}.${lang}.webp`);
+        const file = outDir ? path.join(outDir, folder, `${theme}.${lang}.webp`) : path.join(widgetsDir, folder, "preview", `${theme}.${lang}.webp`);
         total += await capture(p, file);
         count++;
       }

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FullWidget — 一個不一樣的 Windows 桌面小組件</title>
+  <meta name="description" content="FullWidget：免費、開源的 Windows 11 桌面小組件。38 個組件、三套主題，打開就好看；想要更多，就用 HTML、CSS、JS 自己寫。">
+  <meta property="og:title" content="FullWidget — 一個不一樣的 Windows 桌面小組件">
+  <meta property="og:description" content="38 個組件、三套主題，打開就好看；想要更多，就用 HTML、CSS、JS 自己寫。免費、開源。">
+  <meta property="og:image" content="assets/og.png">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">跳到內容</a>
+
+  <header class="top" id="top">
+    <div class="wrap top-in">
+      <a class="brand" href="#" aria-label="FullWidget">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="18" height="56" rx="7" fill="#4cc9f0"/><rect x="26" y="4" width="34" height="18" rx="7" fill="#9b5de5"/><rect x="26" y="26" width="20" height="16" rx="7" fill="#ffd166"/><circle cx="51.5" cy="51.5" r="8.5" fill="#06d6a0"/></svg>
+        <span>FullWidget</span>
+      </a>
+      <nav class="nav" aria-label="頁面" data-i18n-aria="navLabel">
+        <a href="#easy" data-i18n="navEasy">簡單上手</a>
+        <a href="#deep" data-i18n="navDeep">深入自定義</a>
+        <a href="#open" data-i18n="navOpen">開源</a>
+      </nav>
+      <div class="top-right">
+        <div class="langs" role="group" aria-label="語言" data-i18n-aria="langLabel">
+          <button type="button" data-lang="zh-TW">繁</button><button type="button" data-lang="zh-CN">简</button><button type="button" data-lang="en">EN</button>
+        </div>
+        <a class="icon-link" href="{{REPO_URL}}" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+        </a>
+        <a class="btn btn-small" href="#download" data-i18n="navDownload">下載</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ① 首屏：大標 + 瀑布流 -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap">
+        <h1 id="hero-title" class="hero-title" data-i18n-html="heroTitle">一個不一樣的<br><span class="nowrap">Windows 桌面小組件</span></h1>
+        <div class="hero-row">
+          <p class="hero-sub" data-i18n-html="heroSub">38 個組件、三套主題，打開就好看。<br>想要更多，就用 HTML、CSS、JS <span class="nowrap">自己寫。</span><span class="nowrap">免費，開源。</span></p>
+          <div class="hero-act">
+            <a class="btn btn-main" href="{{FULL_URL}}" data-download>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span data-i18n="download">下載 FullWidget</span>
+            </a>
+            <p class="meta mono">v{{VERSION}} · Windows 11 · 52 MB</p>
+          </div>
+        </div>
+      </div>
+      <div class="flow" id="flow" aria-label="38 個內建組件" data-i18n-aria="flowLabel"></div>
+    </section>
+
+    <!-- ② 簡單上手 -->
+    <section class="easy" id="easy" aria-labelledby="easy-title">
+      <div class="wrap">
+        <p class="kicker"><span class="mono">01</span><span data-i18n="easyKicker">簡單上手</span></p>
+        <h2 id="easy-title" class="h2" data-i18n-html="easyTitle">解壓，雙擊，<span class="nowrap">桌面就變好看了。</span></h2>
+        <div class="scene" aria-hidden="true">
+          <div class="s-file">
+            <span class="s-icon"><svg viewBox="0 0 64 64"><rect x="4" y="4" width="18" height="56" rx="7" fill="#4cc9f0"/><rect x="26" y="4" width="34" height="18" rx="7" fill="#9b5de5"/><rect x="26" y="26" width="20" height="16" rx="7" fill="#ffd166"/><circle cx="51.5" cy="51.5" r="8.5" fill="#06d6a0"/></svg></span>
+            <span class="s-name mono">FullWidget.exe</span>
+            <i class="pin mono">1</i>
+          </div>
+          <div class="s-app">
+            <div class="s-bar"><i></i><span>FullWidget</span></div>
+            <img alt="" data-app="add" width="2212" height="1404">
+            <i class="pin mono">3</i>
+          </div>
+          <div class="s-widgets">
+            <img alt="" data-w="clock" data-t="instrument">
+            <img alt="" data-w="weather" data-t="instrument">
+            <img alt="" data-w="sysinfo" data-t="instrument">
+            <i class="pin mono">2</i>
+          </div>
+        </div>
+        <ol class="scene-steps">
+          <li><span class="pin mono">1</span><div><h3 data-i18n="step1Title">下載，解壓，雙擊</h3><p data-i18n="step1Text">不用安裝，也不用帳號。解壓到任何資料夾，雙擊 FullWidget.exe 就能用，放在隨身碟裏也行。</p></div></li>
+          <li><span class="pin mono">2</span><div><h3 data-i18n="step2Title">桌面馬上有東西</h3><p data-i18n="step2Text">時鐘、天氣和系統監控自己出現。拖動就能移動，靠近時自動對齊。</p></div></li>
+          <li><span class="pin mono">3</span><div><h3 data-i18n="step3Title">想要更多，就添加</h3><p data-i18n="step3Text">在控制中心從 38 個組件裏挑，點一下就放到桌面。三套主題隨時換。</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ③ 深入自定義：越往下捲，改得越深 -->
+    <section class="deep" id="deep" aria-labelledby="deep-title">
+      <div class="wrap">
+        <p class="kicker"><span class="mono">02</span><span data-i18n="deepKicker">深入自定義</span></p>
+        <h2 id="deep-title" class="h2" data-i18n-html="deepTitle">想改多深，<span class="nowrap">就改多深。</span></h2>
+      </div>
+      <div class="wrap deep-grid">
+        <div class="stage-col">
+          <div class="stage" id="stage">
+            <div class="desk" id="desk" data-wall="instrument">
+              <div class="clock-slot" id="clockSlot">
+                <iframe id="clock" title="時鐘組件" data-i18n-title="clockTitle" tabindex="-1" scrolling="no"></iframe>
+              </div>
+              <div class="panel panel-look" id="panelLook" aria-hidden="true">
+                <p class="panel-h" data-i18n="lookHead">外觀</p>
+                <div class="row"><span data-i18n="lookAccent">強調色</span><i class="sw" id="lookSwatch"></i><code class="mono" id="lookHex">#7DE2C4</code></div>
+                <div class="row"><span data-i18n="lookRadius">圓角</span><i class="bar"><b id="lookRadiusBar"></b></i><code class="mono" id="lookRadius">22</code></div>
+                <div class="row"><span data-i18n="lookOpacity">背景不透明度</span><i class="bar"><b id="lookOpacityBar"></b></i><code class="mono" id="lookOpacity">74%</code></div>
+              </div>
+              <div class="panel panel-css" id="panelCss" aria-hidden="true">
+                <p class="panel-h mono">custom.css</p>
+                <pre class="mono" id="cssCode"></pre>
+              </div>
+              <div class="panel panel-code" id="panelCode" aria-hidden="true">
+                <div class="tabs mono"><span>widget.json</span><span>index.html</span><span class="on">clock/main.js</span></div>
+                <pre class="mono" id="jsCode"></pre>
+              </div>
+            </div>
+            <ol class="dots" aria-hidden="true"><li></li><li></li><li></li><li></li></ol>
+            <div class="caption" id="caption" aria-hidden="true"></div>
+          </div>
+        </div>
+        <ol class="layers" id="layers">
+          <li class="layer">
+            <p class="layer-n mono">01 / 04</p>
+            <h3 data-i18n="deep1Title">換一套主題</h3>
+            <p data-i18n="deep1Text">三套主題：「量被畫出來」「書桌上的紙」「玻璃上的字」。一鍵換掉整個桌面，也可以每個組件各用各的。</p>
+          </li>
+          <li class="layer">
+            <p class="layer-n mono">02 / 04</p>
+            <h3 data-i18n="deep2Title">調外觀</h3>
+            <p data-i18n="deep2Text">顏色、透明度、圓角、字體和大小，在控制中心的表單裏邊調邊看，不用寫代碼。</p>
+          </li>
+          <li class="layer">
+            <p class="layer-n mono">03 / 04</p>
+            <h3 data-i18n="deep3Title">寫一段 CSS</h3>
+            <p data-i18n-html="deep3Text">表單不夠用時，直接寫 CSS 蓋過去。存檔就生效，只影響<span class="nowrap">這一個組件。</span></p>
+          </li>
+          <li class="layer">
+            <p class="layer-n mono">04 / 04</p>
+            <h3 data-i18n="deep4Title">自己寫一個組件</h3>
+            <p data-i18n="deep4Text">旁邊這段，就是這個時鐘自己的程式碼。一個組件就是一個小網頁：HTML、CSS、JS，有型別提示、熱重載和開發文檔；寫好打包成 .fwz 分享，或投稿到組件市場。</p>
+            <a class="more" href="{{REPO_URL}}/blob/main/docs/組件開發指南.md" data-guide data-i18n="deepGuide">看開發文檔 ↗</a>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ④ 開源・放心 -->
+    <section class="open" id="open" aria-labelledby="open-title">
+      <div class="wrap">
+        <p class="kicker"><span class="mono">03</span><span data-i18n="openKicker">開源・放心</span></p>
+        <h2 id="open-title" class="h2" data-i18n-html="openTitle">免費，開源，<span class="nowrap">什麼都不收集。</span></h2>
+        <div class="ledger">
+          <article class="lead">
+            <div class="sheet" aria-hidden="true">
+              <div class="sheet-head"><i class="sheet-icon"></i><div><b data-i18n="permName">安裝「護眼提醒」</b><span class="mono">hmgvibe · v1.0.0</span></div></div>
+              <p data-i18n="permAsk">它要：</p>
+              <ul><li><i></i><span data-i18n="permNotify">顯示通知（每 20 分鐘提醒你看遠處 20 秒）</span></li></ul>
+              <p class="sheet-no" data-i18n="permNo">不會連網，也讀不到你電腦上的檔案。</p>
+              <div class="sheet-btns"><span data-i18n="permCancel">取消</span><b data-i18n="permOk">安裝並放到桌面</b></div>
+            </div>
+            <h3 data-i18n="permTitle">組件要先問你</h3>
+            <p data-i18n="permText">別人寫的組件要連哪些網站、用哪些系統功能，安裝前都列出來，你同意才裝。組件之間互相隔離。</p>
+          </article>
+          <div class="side">
+            <article class="entry">
+              <div class="fig zeros mono" aria-hidden="true"><div><b>0</b><span data-i18n="z1">帳號</span></div><div><b>0</b><span data-i18n="z2">廣告</span></div><div><b>0</b><span data-i18n="z3">統計</span></div></div>
+              <h3 data-i18n="zeroTitle">沒有帳號、廣告、統計</h3>
+              <p data-i18n="zeroText">FullWidget 不會把你的資料送到網路上。只有你放上桌面、需要連網的組件（例如天氣）才會連網。</p>
+            </article>
+            <article class="entry">
+              <p class="gpl mono" aria-hidden="true">GPL-3.0</p>
+              <h3 data-i18n="gplTitle">每一行程式碼都公開</h3>
+              <p data-i18n-html="gplText">原始碼在 GitHub 上，誰都可以看、可以改。發佈改過的版本，也要<span class="nowrap">一樣開源。</span></p>
+              <a class="more" href="{{REPO_URL}}" data-i18n="gplLink">在 GitHub 上看 ↗</a>
+            </article>
+            <article class="entry">
+              <div class="fig meters" aria-hidden="true">
+                <div class="meter"><span data-i18n="mBase">起步</span><i style="--v:.27"></i><b class="mono">≈ 95 MB</b></div>
+                <div class="meter"><span data-i18n="mEach">每多一個組件</span><i style="--v:.012"></i><b class="mono">+4 MB</b></div>
+                <div class="meter"><span data-i18n-html="mAll">38 個全開<span class="nowrap">（實測）</span></span><i style="--v:1"></i><b class="mono">≈ 355 MB</b></div>
+              </div>
+              <h3 data-i18n="lightTitle">輕，而且懂得讓路</h3>
+              <p data-i18n="lightText">所有組件共用一個網頁引擎進程；全螢幕玩遊戲或看影片時自動暫停，不搶效能。</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑤ 下載 -->
+    <section class="get" id="download" aria-labelledby="get-title">
+      <div class="wrap get-in">
+        <div class="get-main">
+          <h2 id="get-title" class="h2" data-i18n="getTitle">下載 FullWidget</h2>
+          <p class="get-sub" data-i18n="getSub">免費。解壓就能用。</p>
+          <a class="btn btn-mint" href="{{FULL_URL}}" data-download>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><span data-i18n="getBtn">下載完整版</span> <span class="mono">· 52 MB</span></span>
+          </a>
+          <p class="get-slim"><a href="{{SLIM_URL}}" data-download data-i18n="getSlim">精簡版 4 MB</a> <span data-i18n-html="getSlimNote">（需先安裝 <a href="https://dotnet.microsoft.com/download/dotnet/9.0">.NET 9 桌面執行階段</a>）</span></p>
+          <dl class="specs mono">
+            <div><dt data-i18n="specVer">版本</dt><dd>{{VERSION}} · <a href="{{RELEASE_URL}}" data-i18n="specNotes">版本說明</a></dd></div>
+            <div><dt data-i18n="specOs">系統</dt><dd data-i18n="specOsVal">Windows 11 · WebView2（已內建）</dd></div>
+            <div><dt data-i18n="specLang">語言</dt><dd><span class="nowrap">繁體中文 ·</span> <span class="nowrap">简体中文 ·</span> English</dd></div>
+            <div><dt data-i18n="specLicense">授權</dt><dd>GPL-3.0</dd></div>
+          </dl>
+        </div>
+        <div class="get-help">
+          <p class="help-h" data-i18n="helpTitle">第一次打開時</p>
+          <p data-i18n="helpText">Windows 可能顯示「Windows 已保護您的電腦」。這是因為程式還沒有程式碼簽章（正在申請），不是病毒。</p>
+          <div class="ss" aria-hidden="true">
+            <div class="ss-win">
+              <b data-i18n="ssTitle">Windows 已保護您的電腦</b>
+              <i class="ln"></i><i class="ln short"></i>
+              <span class="ss-link ring" data-i18n="ssMore">其他資訊</span>
+              <span class="ss-n mono">1</span>
+            </div>
+            <div class="ss-win">
+              <b data-i18n="ssTitle">Windows 已保護您的電腦</b>
+              <i class="ln"></i><i class="ln short"></i>
+              <span class="ss-btns"><span class="ss-btn ring" data-i18n="ssRun">仍要執行</span><span class="ss-btn" data-i18n="ssDont">不要執行</span></span>
+              <span class="ss-n mono">2</span>
+            </div>
+          </div>
+          <ol class="help-steps sr-only">
+            <li><span class="mono">1</span><span data-i18n-html="help1">按 <b>其他資訊</b></span></li>
+            <li><span class="mono">2</span><span data-i18n-html="help2">按 <b>仍要執行</b></span></li>
+          </ol>
+          <p class="help-foot"><a href="{{REPO_URL}}#code-signing-policy" data-i18n="helpPolicy">程式簽章政策 ↗</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-in">
+      <a class="brand" href="#">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="18" height="56" rx="7" fill="#4cc9f0"/><rect x="26" y="4" width="34" height="18" rx="7" fill="#9b5de5"/><rect x="26" y="26" width="20" height="16" rx="7" fill="#ffd166"/><circle cx="51.5" cy="51.5" r="8.5" fill="#06d6a0"/></svg>
+        <span>FullWidget</span>
+      </a>
+      <nav class="foot-links" aria-label="頁尾" data-i18n-aria="footLabel">
+        <a href="{{REPO_URL}}">GitHub</a>
+        <a href="{{REPO_URL}}/blob/main/docs/組件開發指南.md" data-guide data-i18n="footGuide">開發文檔</a>
+        <a href="{{REPO_URL}}#code-signing-policy">Code signing policy</a>
+        <a href="{{REPO_URL}}#privacy" data-i18n="footPrivacy">隱私</a>
+        <a href="{{REPO_URL}}/blob/main/LICENSE">GPL-3.0</a>
+      </nav>
+      <p class="foot-note" data-i18n="footNote">© 2026 hmgvibe。「FullWidget」名稱和標誌不在開源授權範圍內。</p>
+    </div>
+  </footer>
+
+  <script src="vendor/motion.js"></script>
+  <script src="widget-host.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

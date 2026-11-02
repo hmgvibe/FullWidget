@@ -186,12 +186,14 @@
     "settings": {
       "interval": 2
     },
-    "warmup": 40
+    "warmup": 40,
+    "script": "(() => { const fake = () => { if (net && net.adapters[0]) { net.adapters[0].name = 'Wi-Fi'; net.adapters[0].ipv4 = ['192.168.0.23']; net.adapters[0].ipv6 = []; net.adapters[0].gateways = ['192.168.0.1']; } }; fake(); render(); setInterval(() => { fake(); render(); }, 200); })()"
   },
   "fullwidget.pcinfo": {
     "settings": {
       "showName": false
-    }
+    },
+    "script": "(() => { pc.os.version = '24H2'; pc.os.build = '26100.4351'; pc.cpu.name = 'Intel(R) Core(TM) Ultra 7 155H'; pc.cpu.cores = 16; pc.cpu.threads = 22; pc.memory.installed = 32 * 1024 ** 3; pc.gpus = ['Intel(R) Arc(TM) Graphics']; pc.screens = [{ primary: true, width: 1920, height: 1200 }]; pc.bootTime = Date.now() - (3 * 3600 + 14 * 60) * 1000; render(); })()"
   },
   "fullwidget.volume": {
     "script": {
@@ -261,5 +263,8 @@
         "en": "Goal for 2026"
       }
     }
+  },
+  "fullwidget.disks": {
+    "script": "(() => { const g = 1024 ** 3; const fake = () => { disks = [{ name: 'C:', label: '', type: 'fixed', total: 476 * g, free: 128 * g, usage: 73.1 }, { name: 'D:', label: 'Games', type: 'fixed', total: 931 * g, free: 402 * g, usage: 56.8 }]; render(); }; fake(); setInterval(fake, 200); })()"
   }
 }
