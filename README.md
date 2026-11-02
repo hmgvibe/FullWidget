@@ -1,6 +1,8 @@
 # FullWidget
 
 Windows 桌面小組件，自帶 38 個：時鐘（數字、指針、翻頁、世界時鐘）、日曆、倒數日、番茄鐘、計時器、時間進度、天氣、一週天氣、空氣品質、日出日落、系統監控、使用曲線、網速、磁碟、電池、網路狀態、電腦資訊、資源回收筒、音量、電源、便利貼、待辦清單、快捷啟動、習慣打卡、計算機、搜尋框、自訂資訊卡、新聞訂閱、匯率、每日圖片、歷史上的今天、媒體控制、相框、白噪音、文字標籤。可以換主題、調外觀，也可以用 HTML/CSS/JS 自己寫組件。
+**官網：<https://hmgvibe.github.io/FullWidget/>**　·　[下載](https://github.com/hmgvibe/FullWidget/releases/latest)
+
 Desktop widgets for Windows — [English below](#english).
 
 ## 開始使用
@@ -52,6 +54,8 @@ Windows 版的 `FullWidget.exe` 和 `FullWidget.dll` 會簽章：
 ## English
 
 Desktop widgets for Windows, 38 built in: clocks (digital, analog, flip, world), calendar, countdown, Pomodoro, timer, time progress, weather, 7-day forecast, air quality, sun & moon, system monitor, usage graph, network speed, drives, battery, network status, PC info, Recycle Bin, volume, power, notes, to-do list, launcher, habits, calculator, search box, custom info card, news feed, exchange rates, picture of the day, on this day, now playing, photo frame, ambient sounds and text label. Change themes and looks, or write your own widgets in HTML/CSS/JS.
+
+**Website: <https://hmgvibe.github.io/FullWidget/?lang=en>** · [Download](https://github.com/hmgvibe/FullWidget/releases/latest)
 
 1. Unzip anywhere (e.g. `D:\FullWidget`) and run `FullWidget.exe`.
 2. A clock, the weather and a system monitor appear on the desktop. Drag to move them; right-click for a menu.
