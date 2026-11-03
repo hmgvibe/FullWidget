@@ -13,7 +13,8 @@ const SEALS = { focus: { zh: "專", "zh-CN": "专", en: "F" }, short: { zh: "休
 const minutes = (phase) => Math.max(1, Number(phase === "focus" ? opts.focus : phase === "short" ? opts.shortBreak : opts.longBreak) || 1);
 const length = (phase) => minutes(phase) * MIN;
 const every = () => Math.max(2, Number(opts.longEvery) || 4);
-const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+const dayOf = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+const today = () => dayOf(Date.now());
 
 /** The whole timer; saved after every change so a reload or a restart picks up where it was. */
 let S = { phase: "focus", running: false, endsAt: 0, remaining: length("focus"), done: 0, day: today(), count: 0 };
@@ -66,7 +67,8 @@ function catchUp() {
   if (S.day !== today()) { S.day = today(); S.count = 0; changed = true; }
   while (S.running && Date.now() >= S.endsAt) {
     const n = next(S.phase, S.done);
-    if (S.phase === "focus") S.count++;
+    // counted on the day it ended: one that ended before midnight (the PC asleep overnight) isn't today's
+    if (S.phase === "focus" && dayOf(S.endsAt) === S.day) S.count++;
     ended = S.endsAt;
     S.phase = n.phase; S.done = n.done;
     if (n.auto) S.endsAt = ended + length(n.phase);

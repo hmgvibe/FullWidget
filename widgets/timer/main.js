@@ -52,8 +52,9 @@ function book() {
 function cdStart() { S.cd.running = true; S.cd.done = false; S.cd.endsAt = Date.now() + S.cd.remaining; save(); book(); loop(); }
 function cdPause() { S.cd.remaining = cdLeft(); S.cd.running = false; save(); book(); loop(); }
 function cdReset() { S.cd.running = false; S.cd.done = false; S.cd.remaining = S.cd.duration; save(); book(); loop(); }
+const LONGEST = 24 * HOUR - SEC; // 23:59:59
 function cdSet(ms) {
-  ms = Math.min(Math.max(ms, SEC), 24 * HOUR - SEC);
+  ms = Math.min(Math.max(ms, SEC), LONGEST);
   S.cd = { duration: ms, remaining: ms, running: false, endsAt: 0, done: false };
   save(); book(); loop();
 }
@@ -90,11 +91,16 @@ function editTime() {
 function endEdit(apply, leaving = false) {
   const box = $("cd-edit");
   if (box.hidden) return;
-  const ms = apply ? parse(box.value) : null;
+  let ms = apply ? parse(box.value) : null;
+  // longer than the timer goes: say so instead of quietly cutting it short
+  const tooLong = ms !== null && ms > LONGEST;
+  if (tooLong) ms = null;
   if (apply && ms === null && !leaving) {
     box.classList.add("bad");
     box.setAttribute("aria-invalid", "true");
-    $("cd-hint").textContent = t({ "zh-TW": "寫成 分鐘、分:秒 或 時:分:秒", "zh-CN": "写成 分钟、分:秒 或 时:分:秒", en: "Use minutes, m:ss or h:mm:ss" });
+    $("cd-hint").textContent = tooLong
+      ? t({ "zh-TW": "最長 23:59:59", "zh-CN": "最长 23:59:59", en: "23:59:59 at most" })
+      : t({ "zh-TW": "寫成 分鐘、分:秒 或 時:分:秒", "zh-CN": "写成 分钟、分:秒 或 时:分:秒", en: "Use minutes, m:ss or h:mm:ss" });
     $("cd-hint").hidden = false;
     box.select();
     return;
