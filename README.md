@@ -7,19 +7,20 @@ Desktop widgets for Windows — [English below](#english).
 
 ## 開始使用
 
-1. 解壓到任何資料夾（例如 `D:\FullWidget`），雙擊 `FullWidget.exe`。
+1. 下載 `FullWidget-版本-setup.exe` 執行安裝（不用管理員權限，可以選擇建立桌面捷徑和開機啟動）。
+   不想安裝的話，下載 zip 解壓到任何資料夾（例如 `D:\FullWidget`），雙擊 `FullWidget.exe`。
 2. 桌面上會出現時鐘、天氣和系統監控。拖動就能移動，右鍵有選單。
 3. 左鍵點系統托盤裏的 FullWidget 圖標（三張彩色卡片拼成的 F），打開**控制中心**：添加組件、改外觀、換主題、設定開機自動啟動。
 
 **需要：** Windows 11（Windows 10 沒有測試過），以及 Microsoft Edge WebView2 Runtime（Windows 11 已內建）。
-小的那個 zip 還需要 [.NET 9 桌面執行階段](https://dotnet.microsoft.com/download/dotnet/9.0)；沒有的話第一次打開時 Windows 會提示下載。檔名有 `full` 的那個不需要。
+安裝程式和檔名有 `full` 的 zip 不需要另外安裝任何東西；小的那個 zip 還需要 [.NET 9 桌面執行階段](https://dotnet.microsoft.com/download/dotnet/9.0)，沒有的話第一次打開時 Windows 會提示下載。
 **第一次打開時：** 程式沒有數位簽章，Windows 可能會顯示「Windows 已保護您的電腦」。按「其他資訊」→「仍要執行」就能打開，之後不會再問。
 
 **資料放在哪：** 設定和組件保存的內容在 `%AppData%\FullWidget`。想把資料和程式放在一起（例如放在隨身碟）：在 `FullWidget.exe` 旁邊建一個名為 `portable` 的空檔案，資料就會存在旁邊的 `data` 資料夾。
 
 **自己寫組件：** 右鍵系統匣圖標 →「添加組件」→「新建組件…」，或在控制中心「添加組件」頁右上角按「新建組件…」。說明在「開發文檔」。
 
-**移除：** 先退出 FullWidget，在命令列執行 `FullWidget.exe --cleanup`（從開機啟動和 .fwz 檔案類型中移除），再刪掉程式資料夾；資料在 `%AppData%\FullWidget` 和 `%LocalAppData%\FullWidget`。
+**移除：** 用安裝程式裝的，到 Windows「設定 → 應用程式」解除安裝即可，你的組件和設定會保留。用 zip 的：先退出 FullWidget，在命令列執行 `FullWidget.exe --cleanup`（從開機啟動和 .fwz 檔案類型中移除），再刪掉程式資料夾；資料在 `%AppData%\FullWidget` 和 `%LocalAppData%\FullWidget`。
 
 
 ## 授權
@@ -48,19 +49,20 @@ Desktop widgets for Windows, 38 built in: clocks (digital, analog, flip, world),
 
 **Website: <https://hmgvibe.github.io/FullWidget/?lang=en>** · [Download](https://github.com/hmgvibe/FullWidget/releases/latest)
 
-1. Unzip anywhere (e.g. `D:\FullWidget`) and run `FullWidget.exe`.
+1. Download `FullWidget-<version>-setup.exe` and run it (no admin rights needed; a desktop shortcut and starting with Windows are optional).
+   Or unzip a zip anywhere (e.g. `D:\FullWidget`) and run `FullWidget.exe`.
 2. A clock, the weather and a system monitor appear on the desktop. Drag to move them; right-click for a menu.
 3. Click the FullWidget icon (an F made of colored cards) in the system tray to open the **Control Center**: add widgets, change their look, switch themes, start with Windows. The language follows Windows (English, 繁體中文 or 简体中文) and can be changed under Settings.
 
 **Needs:** Windows 11 (Windows 10 is untested) and the Microsoft Edge WebView2 Runtime (built into Windows 11).
-The smaller zip also needs the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0); Windows offers to download it on first start. The `full` zip doesn't.
+The installer and the `full` zip need nothing else; the smaller zip also needs the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0), which Windows offers to download on first start.
 **First start:** the app isn't code-signed, so Windows may show "Windows protected your PC". Click "More info" → "Run anyway"; it won't ask again.
 
 **Where data goes:** settings and what widgets save live in `%AppData%\FullWidget`. To keep data next to the app (on a USB stick, say), create an empty file named `portable` next to `FullWidget.exe`; data then goes into the `data` folder beside it.
 
 **Make your own widget:** right-click the tray icon → Add widget → New widget…, or press New widget… at the top right of the Control Center's Add widgets page. See the Developer guide.
 
-**Removing it:** quit FullWidget, run `FullWidget.exe --cleanup` from a command prompt (takes it out of startup and the .fwz file type), then delete the app folder. Data is in `%AppData%\FullWidget` and `%LocalAppData%\FullWidget`.
+**Removing it:** installed with the installer, uninstall it under Windows Settings → Apps; your widgets and settings stay. From a zip: quit FullWidget, run `FullWidget.exe --cleanup` from a command prompt (takes it out of startup and the .fwz file type), then delete the app folder. Data is in `%AppData%\FullWidget` and `%LocalAppData%\FullWidget`.
 
 **License:** FullWidget is licensed under the [GNU GPL 3.0](LICENSE): use, change and share it freely, but modified versions you distribute must also be GPL 3.0 with their source. `sdk/` and `templates/` are [MIT](sdk/LICENSE), so your own widgets can use any license, closed ones included. The name "FullWidget" and its logo are not covered by these licenses: please give modified versions another name and icon.
 
