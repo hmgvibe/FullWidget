@@ -7,7 +7,7 @@ spikes/**/status.jsonl
 dist/
 
 # separate repository (hmgvibe/fullwidget-market)
-market/
+/market/
 # design drafts and screenshots
 .oil-ui/
 _site/
