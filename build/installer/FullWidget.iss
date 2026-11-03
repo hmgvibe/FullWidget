@@ -1,4 +1,5 @@
-﻿; The FullWidget installer (Inno Setup 6.5 or newer).
+﻿; The FullWidget installer (Inno Setup 6.5 or newer). Keep this file UTF-8 *with a BOM*: without
+; it the compiler reads the Chinese messages below as the system code page.
 ;   iscc /DAppVersion=1.2.2 /DSourceDir=..\..\dist\FullWidget-1.2.2-win-x64-full\FullWidget /DOutputDir=..\..\dist build\installer\FullWidget.iss
 ; build\publish.ps1 -Step installer does this after building the full (self-contained) folder.
 ;
@@ -58,13 +59,17 @@ Name: "zhcn"; MessagesFile: "ChineseSimplified.isl"
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
-zhtw.DesktopIcon=鍦ㄦ闈㈠缓绔嬫嵎寰?zhcn.DesktopIcon=鍦ㄦ闈㈠垱寤哄揩鎹锋柟寮?en.DesktopIcon=Create a desktop shortcut
-zhtw.AutoStart=闁嬫鏅傝嚜鍕曞暉鍕?FullWidget
-zhcn.AutoStart=寮€鏈烘椂鑷姩鍚姩 FullWidget
+zhtw.DesktopIcon=在桌面建立捷徑
+zhcn.DesktopIcon=在桌面创建快捷方式
+en.DesktopIcon=Create a desktop shortcut
+zhtw.AutoStart=開機時自動啟動 FullWidget
+zhcn.AutoStart=开机时自动启动 FullWidget
 en.AutoStart=Start FullWidget with Windows
-zhtw.Extras=鍏朵粬锛?zhcn.Extras=鍏朵粬锛?en.Extras=Extras:
-zhtw.LaunchNow=鐝惧湪鎵撻枊 FullWidget
-zhcn.LaunchNow=鐜板湪鎵撳紑 FullWidget
+zhtw.Extras=其他：
+zhcn.Extras=其他：
+en.Extras=Extras:
+zhtw.LaunchNow=現在打開 FullWidget
+zhcn.LaunchNow=现在打开 FullWidget
 en.LaunchNow=Open FullWidget now
 
 [Tasks]
