@@ -12,8 +12,9 @@
   <section class="pane cd" id="cd">
     <div class="readout">
       <span class="time w-display" id="cd-time" tabindex="0" data-no-drag></span>
-      <input class="w-input edit" id="cd-edit" inputmode="numeric" autocomplete="off" spellcheck="false" hidden data-no-drag>
+      <input class="w-input edit" id="cd-edit" inputmode="numeric" autocomplete="off" spellcheck="false" hidden data-no-drag aria-describedby="cd-hint">
     </div>
+    <div class="edit-hint" id="cd-hint" role="alert" hidden></div>
     <div class="w-bar track" id="cd-track"><i id="cd-bar"></i></div>
     <div class="ends" id="cd-ends"></div>
     <div class="presets" id="presets" data-no-drag></div>

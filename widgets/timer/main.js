@@ -66,14 +66,15 @@ function cdCheck() {
   if (opts.sound !== false && late < 30 * SEC) chime();
 }
 
-/** "90" = 90 minutes, "5:30" = 5 min 30 s, "1:05:00" = 1 h 5 min. */
+/** "90" = 90 minutes, "5:30" = 5 min 30 s, "1:05:00" = 1 h 5 min. Anything else (a fourth part,
+ *  an empty part, 60 or more minutes or seconds after the first part, zero) is null. */
 function parse(text) {
-  const nums = text.trim().replace(/[：.]/g, ":").split(":").map((x) => x.trim()).filter((x) => x !== "");
-  if (!nums.length || nums.some((x) => !/^\d+$/.test(x))) return null;
-  const n = nums.map(Number);
-  if (n.length === 1) return n[0] * MIN;
-  if (n.length === 2) return n[0] * MIN + n[1] * SEC;
-  return n[0] * HOUR + n[1] * MIN + n[2] * SEC;
+  const parts = text.trim().replace(/[：.]/g, ":").split(":").map((x) => x.trim());
+  if (parts.length > 3 || parts.some((x) => !/^\d+$/.test(x))) return null;
+  const n = parts.map(Number);
+  if (n.slice(1).some((x) => x >= 60)) return null;
+  const ms = n.length === 1 ? n[0] * MIN : n.length === 2 ? n[0] * MIN + n[1] * SEC : n[0] * HOUR + n[1] * MIN + n[2] * SEC;
+  return ms > 0 ? ms : null;
 }
 
 function editTime() {
@@ -85,10 +86,20 @@ function editTime() {
   box.focus();
   box.select();
 }
-function endEdit(apply) {
+/** apply: Enter keeps the box open on a time it can't read and says why; leaving the box drops it. */
+function endEdit(apply, leaving = false) {
   const box = $("cd-edit");
   if (box.hidden) return;
   const ms = apply ? parse(box.value) : null;
+  if (apply && ms === null && !leaving) {
+    box.classList.add("bad");
+    box.setAttribute("aria-invalid", "true");
+    $("cd-hint").textContent = t({ "zh-TW": "寫成 分鐘、分:秒 或 時:分:秒", "zh-CN": "写成 分钟、分:秒 或 时:分:秒", en: "Use minutes, m:ss or h:mm:ss" });
+    $("cd-hint").hidden = false;
+    box.select();
+    return;
+  }
+  clearBad();
   box.hidden = true;
   $("cd-time").hidden = false;
   if (ms) cdSet(ms); else render();
@@ -212,7 +223,13 @@ $("cd-edit").onkeydown = (e) => {
   if (e.key === "Enter") { e.preventDefault(); endEdit(true); }
   if (e.key === "Escape") endEdit(false);
 };
-$("cd-edit").onblur = () => endEdit(true);
+$("cd-edit").onblur = () => endEdit(true, true);
+$("cd-edit").oninput = () => clearBad();
+function clearBad() {
+  $("cd-edit").classList.remove("bad");
+  $("cd-edit").removeAttribute("aria-invalid");
+  $("cd-hint").hidden = true;
+}
 $("sw-main").onclick = swMain;
 $("sw-second").onclick = swSecond;
 

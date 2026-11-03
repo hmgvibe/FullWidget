@@ -17,6 +17,8 @@ body { container-type: size; display: flex; flex-direction: column; gap: 0.5rem;
 body.cd-idle .cd .time { cursor: text; }
 body.cd-idle .cd .time:hover, body.cd-idle .cd .time:focus-visible { text-decoration: underline dotted var(--w-fg-faint); text-underline-offset: 0.12em; }
 .edit { font-family: var(--w-font-num); font-size: min(18cqh, 10cqw); width: 7em; padding: 0 0.3em; }
+.edit.bad { outline: 1.5px solid var(--w-danger); outline-offset: 0; }
+.edit-hint { margin-top: -0.25rem; font-size: 0.75rem; color: var(--w-danger); }
 
 /* countdown: presets before it starts, a draining bar while it runs */
 .track { display: none; }

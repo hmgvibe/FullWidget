@@ -48,10 +48,14 @@ if (host) {
       LANG = S.lang || "zh-TW";
       render();
     } else if (msg.ev === "select") {
+      flushEdits();
+      disarm();
       Object.assign(ui, { page: "mine", sel: msg.d });
       remember();
       render();
     } else if (msg.ev === "page") {
+      flushEdits();
+      disarm();
       ui.page = msg.d === "create" ? "add" : msg.d;
       remember();
       render();
@@ -671,15 +675,27 @@ function syncValue(el, value) {
 
 // ───────────────────────── changes ─────────────────────────
 
-const timers = new WeakMap();
+/** Edits typed into a field are sent a moment later. Each one remembers the widget it was typed
+ *  for, so switching to another widget before it is sent can't redirect it (and flushEdits sends
+ *  it right away when the selection changes). */
+const timers = new Map(); // field → { timer, run }
 function later(el, ms, fn) {
-  clearTimeout(timers.get(el));
-  timers.set(el, setTimeout(fn, ms));
+  const id = ui.sel;
+  const prev = timers.get(el);
+  if (prev) clearTimeout(prev.timer);
+  const run = () => { timers.delete(el); fn(id); };
+  timers.set(el, { timer: setTimeout(run, ms), run });
+}
+/** A delayed commit with everything fixed now: the widget, the setting and the value typed. */
+function laterCommit(el, ms, scope, key, value) {
+  later(el, ms, (id) => commit(scope, key, value, id));
+}
+function flushEdits() {
+  for (const { timer, run } of [...timers.values()]) { clearTimeout(timer); run(); }
 }
 
-/** Sends one value to wherever its scope says. */
-function commit(scope, key, value) {
-  const id = ui.sel;
+/** Sends one value to wherever its scope says; id is the widget it belongs to. */
+function commit(scope, key, value, id = ui.sel) {
   switch (scope) {
     case "setting": return api("instance.setting", { id, key, value });
     case "look": return api("instance.appearance", { id, key, value });
@@ -738,29 +754,29 @@ document.addEventListener("input", (e) => {
     fillRange(el);
     const f = { pct: el.dataset.fmt === "pct", unit: el.dataset.fmt === "pct" ? "" : el.dataset.fmt };
     el.nextElementSibling.textContent = fmtRange(Number(el.value), f);
-    return later(el, 60, () => commit(el.dataset.scope, el.dataset.k, Number(el.value)));
+    return laterCommit(el, 60, el.dataset.scope, el.dataset.k, Number(el.value));
   }
   if (el.dataset.act === "color") {
     const box = el.closest(".color");
     box.querySelector("i").style.background = el.value;
     box.querySelector(".field").value = el.value;
-    return later(el, 80, () => commit(el.dataset.scope, el.dataset.k, el.value));
+    return laterCommit(el, 80, el.dataset.scope, el.dataset.k, el.value);
   }
   if (el.dataset.act === "hex") {
     const v = el.value.startsWith("#") ? el.value : "#" + el.value;
     if (/^#[0-9a-f]{6}$/i.test(v)) {
       el.closest(".color").querySelector("i").style.background = v;
-      later(el, 300, () => commit(el.dataset.scope, el.dataset.k, v.toLowerCase()));
+      laterCommit(el, 300, el.dataset.scope, el.dataset.k, v.toLowerCase());
     }
     return;
   }
   if (el.dataset.act === "font") {
-    if (!el.value) return later(el, 300, () => commit(el.dataset.scope, el.dataset.k, null));
-    return later(el, 500, () => commit(el.dataset.scope, el.dataset.k, el.value));
+    if (!el.value) return laterCommit(el, 300, el.dataset.scope, el.dataset.k, null);
+    return laterCommit(el, 500, el.dataset.scope, el.dataset.k, el.value);
   }
   if (el.dataset.scope === "css") return; // applied on blur
-  if (el.tagName === "INPUT" && el.type !== "number" && el.type !== "date") return later(el, 400, () => commit(el.dataset.scope, el.dataset.k, el.value));
-  if (el.tagName === "TEXTAREA") return later(el, 600, () => commit(el.dataset.scope, el.dataset.k, el.value));
+  if (el.tagName === "INPUT" && el.type !== "number" && el.type !== "date") return laterCommit(el, 400, el.dataset.scope, el.dataset.k, el.value);
+  if (el.tagName === "TEXTAREA") return laterCommit(el, 600, el.dataset.scope, el.dataset.k, el.value);
 });
 
 document.addEventListener("change", (e) => {
@@ -788,13 +804,23 @@ document.addEventListener("focusin", (e) => {
 document.addEventListener("pointerdown", (e) => { if (e.target.type === "range") dragging = e.target; });
 document.addEventListener("pointerup", () => { if (dragging) { dragging = null; setTimeout(render, 0); } });
 
-const removeArm = new WeakMap();
-
-/** Two clicks for anything that can't be undone here: the first one asks. */
-function armed(a, confirmLabel) {
-  if (removeArm.get(a)) { clearTimeout(removeArm.get(a)); removeArm.delete(a); return true; }
-  const label = a.textContent;
-  removeArm.set(a, setTimeout(() => { removeArm.delete(a); a.classList.remove("confirm"); a.textContent = label; }, 3000));
+/** Two clicks for anything that can't be undone here: the first one asks. The question belongs to
+ *  one thing (key, e.g. "remove:<instance id>"): a click meant for anything else asks again. */
+let arm = null; // { key, el, label, timer }
+function disarm() {
+  if (!arm) return;
+  clearTimeout(arm.timer);
+  if (arm.el.isConnected) { arm.el.classList.remove("confirm"); arm.el.textContent = arm.label; }
+  arm = null;
+}
+function armed(a, confirmLabel, key) {
+  if (arm && arm.key === key && arm.el === a && a.classList.contains("confirm")) {
+    clearTimeout(arm.timer);
+    arm = null;
+    return true;
+  }
+  disarm();
+  arm = { key, el: a, label: a.textContent, timer: setTimeout(disarm, 3000) };
   a.classList.add("confirm");
   a.textContent = confirmLabel;
   return false;
@@ -816,6 +842,8 @@ function addWidget(widgetId, grant) {
 }
 
 function onAction(a) {
+  flushEdits();
+  if (a.dataset.action !== "remove" && a.dataset.action !== "uninstall") disarm();
   const id = ui.sel;
   const inst = S && S.instances.find((i) => i.id === id);
   if (a.dataset.action.startsWith("sheet")) return onSheetAction(a);
@@ -836,7 +864,7 @@ function onAction(a) {
       api("instance.duplicate", { id }).then((r) => { ui.sel = r.id; remember(); toast(t("已複製一份，放在桌面的空位")); });
       break;
     case "remove":
-      if (armed(a, t("再按一次移除"))) {
+      if (armed(a, t("再按一次移除"), "remove:" + id)) {
         const name = inst ? inst.name : "";
         api("instance.remove", { id }).then(() => toast(t("已移除「{name}」，它保存的內容也已刪除", { name })));
       }
@@ -884,7 +912,7 @@ function onAction(a) {
     }
     case "uninstall": {
       const m = widgetOf(a.dataset.widget);
-      if (armed(a, t("再按一次解除安裝"))) {
+      if (armed(a, t("再按一次解除安裝"), "uninstall:" + m.id)) {
         api("widget.uninstall", { widget: m.id }).then(() => toast(t("已解除安裝「{name}」，資料夾已移到資源回收筒", { name: m.name })));
       }
       break;

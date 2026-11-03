@@ -38,24 +38,26 @@ function evaluate(src) {
       else return v;
     }
   }
-  // term := power (('*'|'/') power | implicit multiplication before '(')*
+  // term := unary (('*'|'/') unary | implicit multiplication before '(')*
   function term() {
-    let v = power();
+    let v = unary();
     for (;;) {
-      if (take("*")) v *= power();
-      else if (take("/")) { const d = power(); if (d === 0) throw new CalcError("÷0"); v /= d; }
-      else if (peek() && peek().op === "(") v *= power();
+      if (take("*")) v *= unary();
+      else if (take("/")) { const d = unary(); if (d === 0) throw new CalcError("÷0"); v /= d; }
+      else if (peek() && peek().op === "(") v *= unary();
       else return v;
     }
   }
-  function power() {
-    const b = unary();
-    return take("^") ? Math.pow(b, power()) : b;
-  }
+  // unary := ('-'|'+') unary | power — a sign binds looser than ^, so -2^2 = -(2^2) = -4
   function unary() {
     if (take("-")) return -unary();
     if (take("+")) return unary();
-    return postfix();
+    return power();
+  }
+  // power := postfix ('^' unary)? — right-associative, and the exponent may have a sign (2^-2)
+  function power() {
+    const b = postfix();
+    return take("^") ? Math.pow(b, unary()) : b;
   }
   function postfix() {
     let v = atom();
