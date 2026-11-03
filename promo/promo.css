@@ -14,6 +14,11 @@
   --display: "Segoe UI Variable Display", "Segoe UI", "Microsoft JhengHei UI", "Microsoft JhengHei", system-ui, sans-serif;
   --mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
 }
+/* Simplified Chinese takes its glyphs from YaHei */
+:root:lang(zh-CN) {
+  --sans: "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+  --display: "Segoe UI Variable Display", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+}
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: #08090b; overflow: hidden; }
 body { font: 17px/1.5 var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }

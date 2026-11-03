@@ -37,7 +37,7 @@
   const BUILTIN = Object.keys(SIZE).filter((f) => !f.startsWith("hmgvibe."));
   const aspect = (f) => SIZE[f][1] / SIZE[f][0];
   const pic = (folder, theme = "instrument", lang = LANG) =>
-    folder === "clock" ? `assets/clock-0941.${theme}.png`
+    folder === "clock" ? `assets/clock-0941.${theme}.${lang}.png`
       : folder.startsWith("hmgvibe.") ? `assets/market/${folder}/${theme}.${lang}.webp`
         : `../site/assets/widgets/${folder}/${theme}.${lang}.webp`;
   const LOGO = { cyan: "#4cc9f0", violet: "#9b5de5", yellow: "#ffd166", green: "#06d6a0" };
@@ -259,7 +259,7 @@
     [["flipclock", 56, 70, 560, { speed: 60 }], ["analogclock", 660, 70, 470, { speed: 24, h: 470 }], ["pomodoro", 56, 400, 560, { speed: 90, storage: pomo(872000) }], ["countdown", 660, 545, 470, null]],
     [["weather", 56, 90, 540, null], ["forecast", 620, 90, 510, null], ["airquality", 56, 470, 540, null], ["sunmoon", 620, 450, 510, null]],
     [["sysinfo", 56, 70, 500, {}], ["usage", 600, 70, 528, { settings: { span: 60 } }], ["netspeed", 56, 470, 500, {}], ["disks", 600, 420, 528, null]],
-    [["todo", 56, 70, 470, { h: 400, storage: { items: [{ id: "a", text: "回覆客戶郵件", done: true }, { id: "b", text: "整理會議記錄", done: false }, { id: "c", text: "預約牙醫", done: false }, { id: "d", text: "讀完第三章", done: false }] },
+    [["todo", 56, 70, 470, { h: 400, storage: { items: T.todo.map((text, i) => ({ id: "abcd"[i], text, done: i === 0 })) },
       actions: [[16.55, (w, d) => Live.click(d, '[data-id="b"] .w-check')], [17.05, (w, d) => Live.click(d, '[data-id="c"] .w-check')]] }],
       ["calculator", 620, 70, 420, { actions: ["1", "2", "8", "0", "×", "0", ".", "8", "5", "="].map((k, i) => [15.95 + i * 0.12, press(k)]) }],
       ["habits", 56, 500, 470, null]],
@@ -271,10 +271,10 @@
     const t0 = 8 + ci * 2.5;
     shot(t0, t0 + 2.5, "", (root) => {
       const wrap = full(root);
-      const name = words(wrap, cat.name, 96, 250, 170, "cat");
+      const name = words(wrap, cat.name, 96, 250, LANG === "en" ? 132 : 170, "cat");
       const cnt = box(wrap, "cat-n", 100, 470);
       cnt.innerHTML = `<b>${cat.n}</b> ${T.catUnit}`;
-      const list = cat.list.map((n, i) => { const d = box(wrap, "cat-l", 100 + (i >= 5 ? 190 : 0), 560 + (i % 5) * 44); d.textContent = n; return d; });
+      const list = cat.list.map((n, i) => { const d = box(wrap, "cat-l", 100 + (i >= 5 ? (LANG === "en" ? 250 : 190) : 0), 560 + (i % 5) * 44); d.textContent = n; return d; });
       const panel = box(wrap, `panel wp${cat.wp}`, PANEL.x, PANEL.y, PANEL.w, PANEL.h);
       const items = CAT_ITEMS[ci].map(([f, x, y, w, o]) => {
         if (!o) return { f, item: picture(panel, f, x, y, w) };

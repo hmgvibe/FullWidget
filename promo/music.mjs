@@ -4,7 +4,7 @@
 // video's own timeline (promo/scenes.js).
 //
 //   node promo/music.mjs            → promo/out/music.wav
-//   node promo/music.mjs --mux      → also promo/out/FullWidget-promo-music.mp4 (video + music,
+//   node promo/music.mjs --mux      → also promo/out/FullWidget-promo.<lang>.music.mp4 (each video + music,
 //                                     loudness normalised to −14 LUFS for online video)
 //
 // No samples and no npm packages: plucked strings (Karplus–Strong), struck bars, noise, filters and
@@ -502,9 +502,14 @@ console.log(`${path.relative(process.cwd(), wav)}: ${DUR} s, ${strums.length} st
 if (process.argv.includes("--mux")) {
   const root = path.resolve(import.meta.dirname, "..");
   const ff = [path.join(root, ".tools", "ffmpeg", "bin", "ffmpeg.exe")].find((p) => fs.existsSync(p)) || "ffmpeg";
-  const video = path.join(out, "FullWidget-promo.mp4"), result = path.join(out, "FullWidget-promo-music.mp4");
-  const r = spawnSync(ff, ["-y", "-loglevel", "error", "-i", video, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "copy",
-    "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000", "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", result], { stdio: "inherit" });
-  if (r.status !== 0) throw new Error("ffmpeg failed");
-  console.log(`${path.relative(process.cwd(), result)}: ${(fs.statSync(result).size / 1048576).toFixed(1)} MB`);
+  // every language recorded so far: FullWidget-promo.<lang>.mp4 → FullWidget-promo.<lang>.music.mp4
+  const videos = ["zh-TW", "zh-CN", "en"].map((l) => path.join(out, `FullWidget-promo.${l}.mp4`)).filter((v) => fs.existsSync(v));
+  if (!videos.length) throw new Error("no video yet: node promo/render.mjs --lang <zh-TW|zh-CN|en>");
+  for (const video of videos) {
+    const result = video.replace(/\.mp4$/, ".music.mp4");
+    const r = spawnSync(ff, ["-y", "-loglevel", "error", "-i", video, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "copy",
+      "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000", "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", result], { stdio: "inherit" });
+    if (r.status !== 0) throw new Error("ffmpeg failed");
+    console.log(`${path.relative(process.cwd(), result)}: ${(fs.statSync(result).size / 1048576).toFixed(1)} MB`);
+  }
 }

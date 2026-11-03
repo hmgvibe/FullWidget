@@ -48,7 +48,7 @@ now=Math.max(now,to);for(var k=0;k<3;k++){var r=raf;raf=[];if(!r.length)break;r.
   }
   const COVER = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#ff7a93'/><stop offset='1' stop-color='#ffc36b'/></linearGradient></defs><rect width='100' height='100' fill='url(#g)'/><circle cx='64' cy='36' r='15' fill='#fff6e0' opacity='.85'/><path d='M0 74 L28 58 L52 72 L78 55 L100 65 V100 H0Z' fill='#3a2140' opacity='.35'/><path d='M0 86 L36 74 L62 84 L100 76 V100 H0Z' fill='#3a2140' opacity='.5'/></svg>");
   const MEDIA = (vt, title) => ({
-    available: true, app: { id: "", name: "", icon: null }, title: title || "晴天的海邊", artist: "林間小路", album: "夏日記事",
+    available: true, app: { id: "", name: "", icon: null }, title: title || COPY.media.title, artist: COPY.media.artist, album: COPY.media.album,
     status: "playing", playing: true, position: 77000, duration: 214000, updated: vt, cover: COVER,
     can: { play: true, pause: true, toggle: true, next: true, previous: true, seek: true },
   });
@@ -62,7 +62,7 @@ now=Math.max(now,to);for(var k=0;k<3;k++){var r=raf;raf=[];if(!r.length)break;r.
     const w = { frame, o, host: null, vt: BASE, sysOn: false, sysSec: -1 };
     const vtAt = (t) => BASE + Math.max(0, t - (o.t0 || 0)) * 1000 * (o.speed || 1);
     w.host = await FWHost.mount(frame, {
-      folder: o.folder, root: "../", locale: o.locale || "zh-TW", theme: o.theme || "instrument", head: RUNTIME,
+      folder: o.folder, root: "../", locale: o.locale || COPY.lang, theme: o.theme || "instrument", head: RUNTIME,
       settings: o.settings, storage: o.storage || {},
       calls: {
         "system.subscribe": () => { w.sysOn = true; return sys(w.vt); },
@@ -74,8 +74,8 @@ now=Math.max(now,to);for(var k=0;k<3;k++){var r=raf;raf=[];if(!r.length)break;r.
         "media.control": () => null,
         "notify.show": () => null,
         "notify.cancel": () => null,
-        "audio.get": () => ({ available: true, volume: 46, muted: false, device: "揚聲器" }),
-        "audio.subscribe": () => ({ available: true, volume: 46, muted: false, device: "揚聲器" }),
+        "audio.get": () => ({ available: true, volume: 46, muted: false, device: COPY.device }),
+        "audio.subscribe": () => ({ available: true, volume: 46, muted: false, device: COPY.device }),
       },
     });
     const win = frame.contentWindow;

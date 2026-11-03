@@ -14,9 +14,9 @@
     const FIXED_TIME = "<script>(function(){var R=Date,T=new R(2026,10,3,9,41,0).getTime();" +
       "class D extends R{constructor(...a){super(...(a.length?a:[T]))}static now(){return T}}window.Date=D;})();<\/script>" +
       "<style>*,*::before,*::after{transition:none!important;animation:none!important}</style>";
-    const theme = new URLSearchParams(location.search).get("theme") || "instrument";
+    const q = new URLSearchParams(location.search), theme = q.get("theme") || "instrument", lang = q.get("lang") || "zh-TW";
     window.PROMO_ASSET = FWHost.mount(document.getElementById("f"), {
-      folder: "clock", root: "../", locale: "zh-TW", theme, head: FIXED_TIME,
+      folder: "clock", root: "../", locale: lang, theme, head: FIXED_TIME,
       settings: { showSeconds: false, showDate: true, use24h: true },
     }).then(() => document.fonts.ready).then(() => new Promise((r) => setTimeout(r, 400))).then(() => true);
   </script>

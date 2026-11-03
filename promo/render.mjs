@@ -1,11 +1,12 @@
 // Records the promo (promo/index.html) frame by frame with headless Edge.
 //
-//   node promo/render.mjs                         the whole video → promo/out/FullWidget-promo.mp4
-//   node promo/render.mjs --stills 2,6.5,14       single frames → promo/out/stills/
-//   node promo/render.mjs --sheet 0:60:0.5        a contact sheet, one small frame every 0.5 s → promo/out/sheet-*.png
+//   node promo/render.mjs                         the whole video → promo/out/FullWidget-promo.zh-TW.mp4
+//   node promo/render.mjs --lang en               in another language (zh-TW, zh-CN, en) → promo/out/FullWidget-promo.en.mp4
+//   node promo/render.mjs --stills 2,6.5,14       single frames → promo/out/stills/<lang>/
+//   node promo/render.mjs --sheet 0:60:0.5        a contact sheet, one small frame every 0.5 s → promo/out/sheet-<lang>-*.png
 //   node promo/render.mjs --serve                 just serve the page: http://127.0.0.1:8080/promo/index.html
-//   node promo/render.mjs --assets                the 9:41 clock at 2× (promo/assets/clock-0941.*.png)
-//   options: --page other.html (another page with the same PROMO API)  --fps 60  --workers 4  --from 0 --to 60 (part of the video)  --out file.mp4
+//   node promo/render.mjs --assets                the 9:41 clock at 2×, each theme and language (promo/assets/clock-0941.*.png)
+//   options: --page other.html (another page with the same PROMO API)  --fps 60  --workers 4  --from 0 --to 74 (part of the video)  --out file.mp4
 //
 // Every frame is drawn from its time alone (PROMO.seek(t)), so recording is exact and repeatable.
 // The video needs ffmpeg: .tools/ffmpeg/bin/ffmpeg.exe in the repository, or ffmpeg on PATH.
@@ -122,7 +123,9 @@ if (args.includes("--serve")) {
   await new Promise(() => {});
 }
 const server = await serve();
-const base = `http://127.0.0.1:${server.address().port}/promo/${opt("--page", "index.html")}?render`;
+const LANG = opt("--lang", "zh-TW");
+if (!["zh-TW", "zh-CN", "en"].includes(LANG)) throw new Error(`--lang ${LANG}: use zh-TW, zh-CN or en`);
+const base = `http://127.0.0.1:${server.address().port}/promo/${opt("--page", "index.html")}?render&lang=${LANG}`;
 fs.mkdirSync(outDir, { recursive: true });
 const started = Date.now();
 let port = 9400 + Math.floor(Math.random() * 400);
@@ -130,17 +133,17 @@ let port = 9400 + Math.floor(Math.random() * 400);
 try {
   if (args.includes("--assets")) {
     // the clock widget at 9:41, 2× and transparent, in each theme (used on the tiles)
-    for (const theme of ["instrument", "paper", "type"]) {
-      const b = await openBrowser(port++, `http://127.0.0.1:${server.address().port}/promo/clock.html?theme=${theme}`, "PROMO_ASSET");
+    for (const theme of ["instrument", "paper", "type"]) for (const lang of ["zh-TW", "zh-CN", "en"]) {
+      const b = await openBrowser(port++, `http://127.0.0.1:${server.address().port}/promo/clock.html?theme=${theme}&lang=${lang}`, "PROMO_ASSET");
       await b.send("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });
       const r = await b.send("Page.captureScreenshot", { format: "png", fromSurface: true, clip: { x: 0, y: 0, width: 300, height: 150, scale: 2 } });
-      const file = path.join(import.meta.dirname, "assets", `clock-0941.${theme}.png`);
+      const file = path.join(import.meta.dirname, "assets", `clock-0941.${theme}.${lang}.png`);
       fs.writeFileSync(file, Buffer.from(r.data, "base64"));
       console.log(path.relative(root, file));
       await b.close();
     }
   } else if (opt("--stills")) {
-    const dir = path.join(outDir, "stills");
+    const dir = path.join(outDir, "stills", LANG);
     fs.mkdirSync(dir, { recursive: true });
     const b = await openBrowser(port, base);
     for (const s of opt("--stills").split(",").map(Number)) {
@@ -163,15 +166,15 @@ try {
     await b.send("Page.setDocumentContent", { frameId: frameTree.frameTree.frame.id, html });
     await sleep(600);
     const r = await b.send("Page.captureScreenshot", { format: "png" });
-    const file = path.join(outDir, `sheet-${a}-${z}.png`);
+    const file = path.join(outDir, `sheet-${LANG}-${a}-${z}.png`);
     fs.writeFileSync(file, Buffer.from(r.data, "base64"));
     console.log(path.relative(root, file), `(${frames.length} frames)`);
     await b.close();
   } else {
     const fps = Number(opt("--fps", 60));
-    const from = Number(opt("--from", 0)), to = Number(opt("--to", 60));
+    const from = Number(opt("--from", 0)), to = Number(opt("--to", 74));
     const workers = Number(opt("--workers", Math.max(1, Math.min(4, Math.floor(os.cpus().length / 4)))));
-    const out = path.resolve(opt("--out", path.join(outDir, "FullWidget-promo.mp4")));
+    const out = path.resolve(opt("--out", path.join(outDir, `FullWidget-promo.${LANG}.mp4`)));
     const first = Math.round(from * fps), last = Math.round(to * fps); // [first, last)
     const total = last - first;
     const work = fs.mkdtempSync(path.join(outDir, "work-"));

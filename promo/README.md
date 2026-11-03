@@ -10,6 +10,7 @@ node promo/render.mjs --serve
 
 打開 <http://127.0.0.1:8080/promo/index.html>：
 
+- `?lang=zh-CN` 看簡中，`?lang=en` 看英文，不加是繁中。
 - 下方時間軸可以拖動，刻度是小節，綠線是每一段的開頭。
 - 空白鍵播放或暫停，← → 前後跳一拍。
 - `?t=20` 從第 20 秒開始，`?pause` 打開時先暫停。
@@ -18,16 +19,18 @@ node promo/render.mjs --serve
 ## 錄影
 
 ```
-node promo/render.mjs --to 74                整支片 → promo/out/FullWidget-promo.mp4
+node promo/render.mjs                        整支片（繁中）→ promo/out/FullWidget-promo.zh-TW.mp4
+node promo/render.mjs --lang zh-CN           簡中 → FullWidget-promo.zh-CN.mp4；--lang en 是英文
 node promo/render.mjs --stills 6,14.5,40     單幀 PNG → promo/out/stills/
 node promo/render.mjs --sheet 0:74:0.5       每 0.5 秒一幀的縮圖表 → promo/out/sheet-*.png
-node promo/render.mjs --assets               重拍 9:41 的時鐘圖（assets/clock-0941.*.png）
+node promo/render.mjs --assets               重拍 9:41 的時鐘圖，三套主題 × 三種語言（assets/clock-0941.<主題>.<語言>.png）
 node promo/render.mjs --page livetest.html --stills 0,1,2   檢查真組件在虛擬時鐘上跑不跑得起來
 ```
 
 - 錄影時用無頭 Edge 逐幀截圖，4 個 Edge 平行錄。
 - MP4 需要 ffmpeg：放在 `.tools/ffmpeg/bin/ffmpeg.exe`（不進 git），或系統 PATH 上的 ffmpeg。
 - 選項：
+  - `--lang zh-TW|zh-CN|en`：語言，預設繁中。單幀放在 `promo/out/stills/<語言>/`。
   - `--workers N`：同時開幾個 Edge。
   - `--from 10 --to 20`：只錄一段。
   - `--fps 30`：改幀率。
@@ -37,7 +40,7 @@ node promo/render.mjs --page livetest.html --stills 0,1,2   檢查真組件在�
 
 ```
 node promo/music.mjs           只做音樂 → promo/out/music.wav
-node promo/music.mjs --mux     再和影片合在一起 → promo/out/FullWidget-promo-music.mp4
+node promo/music.mjs --mux     再和錄好的每種語言的影片合在一起 → promo/out/FullWidget-promo.<語言>.music.mp4
 ```
 
 - **原創**：120 BPM、D 大調的明亮流行曲，走拍手踏腳的風格：踏地、一群人拍手、鈴鼓和沙鈴，左右兩把木吉他刷和弦，撥弦低音，馬林巴琴，口哨吹主旋律。
@@ -55,7 +58,7 @@ node promo/music.mjs --mux     再和影片合在一起 → promo/out/FullWidget
 
   | 秒 | 音樂 |
   |---|---|
-  | 0–5 | logo 四塊落下各一個鐘琴音；「桌面／也可以／很好看。」每個字一下踏地、拍手、刷和弦；拍手越拍越快衝進 5 秒 |
+  | 0–5 | logo 四塊落下各一個鐘琴音；「桌面／也可以／很好看」每個字一下踏地、拍手、刷和弦；拍手越拍越快衝進 5 秒 |
   | 5–13 | 全團進來，馬林巴帶旋律 |
   | 13–21 | 口哨吹主旋律 |
   | 39–42 | 全螢幕：整首歌被悶住，像隔着一面牆 |
@@ -87,11 +90,11 @@ node promo/music.mjs --mux     再和影片合在一起 → promo/out/FullWidget
 | `engine.js` | 時間軸核心：節拍、緩動曲線（和官網的 `--slide`、`--click` 一樣）、關鍵幀、逐字浮現 |
 | `live.js` | 真組件的虛擬時鐘和模擬數據 |
 | `scenes.js` | 所有鏡頭，畫面是時間 t 的函數 |
-| `copy.js` | 所有字幕和文字 |
+| `copy.js` | 所有字幕和文字，繁中、簡中、英文三份 |
 | `promo.css` | 官網的色彩、字體、桌布漸層和卡片樣式 |
 | `music.mjs` | 配樂：合成器、樂譜和音效時間點 |
 | `clock.html`、`livetest.html` | 拍 9:41 時鐘圖；檢查真組件 |
-| `assets/` | 9:41 的時鐘圖；組件市場兩個組件的 2 倍預覽圖 |
+| `assets/` | 9:41 的時鐘圖（每種主題和語言各一張）；組件市場兩個組件的 2 倍預覽圖 |
 
 ## 分鏡（120 BPM，一拍 0.5 秒，一小節 2 秒）
 
@@ -101,7 +104,7 @@ node promo/music.mjs --mux     再和影片合在一起 → promo/out/FullWidget
 |---|---|---|
 | 0.0 | 1 | logo 四塊逐拍落下拼成 F（0、0.25、0.5、0.75 秒各一塊） |
 | 1.25 | 1 | F 炸開，組件從鏡頭前飛過 |
-| 2.0 / 2.5 / 3.0 | 2 | 大字：「桌面」「也可以」「很好看。」 |
+| 2.0 / 2.5 / 3.0 | 2 | 大字：「桌面」「也可以」「很好看」 |
 | 5.0 | 3 | 瀑布流衝進來，數字數到 38 |
 | 7.3 | 4 | 鏡頭鑽進一格 |
 | 8.0 | 5 | 時間（翻頁時鐘、指針時鐘、番茄鐘在走） |
@@ -127,6 +130,6 @@ node promo/music.mjs --mux     再和影片合在一起 → promo/out/FullWidget
 
 ## 改內容
 
-- **改字**：改 `copy.js`。
+- **改字**：改 `copy.js`，三種語言要一起改。英文比較長，改完用 `--lang en --stills` 看一下有沒有超出畫面。
 - **改時間**：每個鏡頭的時間寫在 `scenes.js` 的 `shot(開始, 結束, …)`。改了要一起改上面的表和 `music.mjs` 的音效時間。
 - **改了組件的樣子**：先跑 `node build/make-previews.mjs --scale 2 --out site/assets/widgets` 重拍官網的組件圖，再跑 `--assets` 重拍時鐘。
