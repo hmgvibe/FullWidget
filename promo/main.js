@@ -20,7 +20,7 @@
     async seek(time) {
       t = time;
       SCENES.render(t);
-      await SCENES.syncClock(t);
+      await SCENES.sync(t);
       SCENES.render(t);
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       return true;
@@ -78,7 +78,7 @@
     if (playing) { t += Math.min(0.1, (now - last) / 1000); if (t >= D) t = 0; }
     last = now;
     SCENES.render(t);
-    SCENES.syncClock(t);
+    SCENES.sync(t);
     fill.style.width = `${(t / D) * 100}%`;
     timeEl.textContent = `${t.toFixed(2)} s · 第 ${Math.floor(t / E.bar(1)) + 1} 小節`;
     requestAnimationFrame(frame);

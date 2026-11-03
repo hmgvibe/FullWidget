@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>live widgets test</title>
+  <!-- Checks live.js: real widgets on a virtual clock. render.mjs --page livetest.html --stills 0,1,2 -->
+  <style>
+    body { margin: 0; width: 1920px; height: 1080px; background: linear-gradient(160deg, #10263a, #1c4f6e 55%, #3e8fb0); display: grid; grid-template-columns: repeat(4, 420px); gap: 30px; padding: 40px; box-sizing: border-box; align-content: start; }
+    iframe { border: 0; background: transparent; width: 420px; height: 240px; }
+  </style>
+</head>
+<body>
+  <script src="../site/widget-host.js"></script>
+  <script src="live.js"></script>
+  <script>
+    const W = [
+      { folder: "flipclock", speed: 60 },
+      { folder: "analogclock", speed: 20, h: 300 },
+      { folder: "pomodoro", speed: 120, storage: { state: { phase: "focus", running: true, endsAt: Live.BASE + 872000, remaining: 872000, done: 2, day: "2026-11-03", count: 2 } } },
+      { folder: "sysinfo" },
+      { folder: "usage", settings: { span: 60 } },
+      { folder: "netspeed" },
+      { folder: "todo", storage: { items: [{ id: "a", text: "回覆客戶郵件", done: true }, { id: "b", text: "整理會議記錄", done: false }, { id: "c", text: "預約牙醫", done: false }] },
+        actions: [[0.8, (w, d) => Live.click(d, '[data-id="b"] .w-check')]] },
+      { folder: "media" },
+      { folder: "calculator", actions: [[0.3, (w, d) => [...d.querySelectorAll("button")].find((b) => b.textContent.trim() === "7")?.click()], [0.6, (w, d) => [...d.querySelectorAll("button")].find((b) => b.textContent.trim() === "×")?.click()]] },
+      { folder: "worldclock", speed: 60 },
+      { folder: "timer", speed: 30, storage: { state: { mode: "cd", cd: { duration: 600000, remaining: 387000, running: true, endsAt: Live.BASE + 387000, done: false }, sw: { running: false, startedAt: 0, elapsed: 0, laps: [] } } } },
+      { folder: "whitenoise", script: "levels = { rain: 70, waves: 45, wind: 0, fire: 30, noise: 0 }; playing = true; render();" },
+    ];
+    const live = [];
+    window.PROMO = {
+      ready: async () => {
+        for (const o of W) {
+          const f = document.createElement("iframe");
+          f.scrolling = "no";
+          if (o.h) f.style.height = o.h + "px";
+          document.body.append(f);
+          live.push(await Live.mount(f, o));
+        }
+        await document.fonts.ready;
+        return true;
+      },
+      async seek(t) { for (const w of live) w.sync(t); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); return true; },
+    };
+  </script>
+</body>
+</html>

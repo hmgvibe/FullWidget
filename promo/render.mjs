@@ -5,7 +5,7 @@
 //   node promo/render.mjs --sheet 0:60:0.5        a contact sheet, one small frame every 0.5 s → promo/out/sheet-*.png
 //   node promo/render.mjs --serve                 just serve the page: http://127.0.0.1:8080/promo/index.html
 //   node promo/render.mjs --assets                the 9:41 clock at 2× (promo/assets/clock-0941.*.png)
-//   options: --fps 60  --workers 4  --from 0 --to 60 (part of the video)  --out file.mp4
+//   options: --page other.html (another page with the same PROMO API)  --fps 60  --workers 4  --from 0 --to 60 (part of the video)  --out file.mp4
 //
 // Every frame is drawn from its time alone (PROMO.seek(t)), so recording is exact and repeatable.
 // The video needs ffmpeg: .tools/ffmpeg/bin/ffmpeg.exe in the repository, or ffmpeg on PATH.
@@ -85,6 +85,7 @@ async function openBrowser(port, url, readyExpr = "PROMO.ready()") {
   const global = readyExpr.split(/[.(]/)[0];
   for (let i = 0; i < 200; i++) { await sleep(100); try { if (await evaluate(`!!window.${global}`)) break; } catch { /* loading */ } }
   await keepFront();
+  if (!(await evaluate(`!!window.${global}`))) throw new Error(`the page didn't start: ${JSON.stringify(await evaluate("window.__errs || []"))}`);
   await evaluate(readyExpr);
   let count = 0;
   const once = async (t, scale, format) => {
@@ -121,7 +122,7 @@ if (args.includes("--serve")) {
   await new Promise(() => {});
 }
 const server = await serve();
-const base = `http://127.0.0.1:${server.address().port}/promo/index.html?render`;
+const base = `http://127.0.0.1:${server.address().port}/promo/${opt("--page", "index.html")}?render`;
 fs.mkdirSync(outDir, { recursive: true });
 const started = Date.now();
 let port = 9400 + Math.floor(Math.random() * 400);

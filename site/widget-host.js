@@ -22,8 +22,9 @@
    * Runs a built-in widget in `frame` (an <iframe>).
    * options: folder ("clock"), locale, theme, settings (overrides), size {width, height} in CSS px,
    * root (where widgets/ and sdk/ are; default: this page's folder), head (extra HTML placed in
-   * the widget's <head> before anything else, e.g. a fixed clock for the promo video).
-   * Returns { setTheme(theme), setLook(css), setLocale(locale) }.
+   * the widget's <head> before anything else, e.g. a fixed clock for the promo video),
+   * storage (starting contents, kept in memory only), calls (more host calls: { "system.subscribe": fn }).
+   * Returns { setTheme(theme), setLook(css), send(event, data) }.
    */
   async function mount(frame, options) {
     if (options.root) root = new URL(options.root, document.baseURI).href;
@@ -33,10 +34,15 @@
     const html = await (await fetch(base + (manifest.entry || "index.html"))).text();
 
     const settings = {};
-    for (const s of manifest.settings || []) if (s.key) settings[s.key] = s.default;
+    // a default may be given per language ({ "zh-TW": …, "en": … }), as the app resolves it
+    const loc = options.locale || "zh-TW";
+    const pickLang = (v) => (v && typeof v === "object" && !Array.isArray(v) && ("zh-TW" in v || "en" in v) ? v[loc] ?? v.en ?? v["zh-TW"] : v);
+    for (const s of manifest.settings || []) if (s.key) settings[s.key] = pickLang(s.default);
     Object.assign(settings, options.settings || {});
     const storeKey = `fw-site:${options.folder}`;
-    const store = JSON.parse(localStorage.getItem(storeKey) || "{}");
+    const keep = !options.storage; // given contents (the promo) aren't saved in this browser
+    const store = options.storage ? JSON.parse(JSON.stringify(options.storage)) : JSON.parse(localStorage.getItem(storeKey) || "{}");
+    const save = () => { if (keep) localStorage.setItem(storeKey, JSON.stringify(store)); };
 
     let theme = options.theme || "instrument";
     let look = "";
@@ -57,12 +63,13 @@
     const deliver = (msg) => frame.contentWindow && frame.contentWindow.__fwDeliver && frame.contentWindow.__fwDeliver(msg);
     const calls = {
       "storage.get": (p) => store[p.key] ?? null,
-      "storage.set": (p) => { store[p.key] = p.value; localStorage.setItem(storeKey, JSON.stringify(store)); return null; },
-      "storage.remove": (p) => { delete store[p.key]; localStorage.setItem(storeKey, JSON.stringify(store)); return null; },
+      "storage.set": (p) => { store[p.key] = p.value; save(); return null; },
+      "storage.remove": (p) => { delete store[p.key]; save(); return null; },
       "storage.keys": () => Object.keys(store),
       "settings.set": (p) => { Object.assign(settings, p.values || { [p.key]: p.value }); deliver({ ev: "settings", d: { ...settings } }); return null; },
       "text.chinese": (p) => p.text,
       "window.getSize": () => options.size || boot.size,
+      ...(options.calls || {}),
     };
     window.__fwHosts = window.__fwHosts || {};
     window.__fwHosts[id] = (msg) => {
@@ -97,6 +104,7 @@
       async setTheme(t) { if (t !== theme) { theme = t; await push(); } },
       async setLook(css) { if (css !== look) { look = css; await push(); } },
       get theme() { return theme; },
+      send(ev, d) { deliver({ ev, d }); },
     };
   }
 
