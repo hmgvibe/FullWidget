@@ -23,6 +23,7 @@ node promo/render.mjs                        整支片（繁中）→ promo/out/
 node promo/render.mjs --lang zh-CN           簡中 → FullWidget-promo.zh-CN.mp4；--lang en 是英文
 node promo/render.mjs --stills 6,14.5,40     單幀 PNG → promo/out/stills/
 node promo/render.mjs --sheet 0:74:0.5       每 0.5 秒一幀的縮圖表 → promo/out/sheet-*.png
+node promo/render.mjs --covers               封面，兩款 × 三種語言 → promo/out/cover-<1|2>.<語言>.jpg（版面在 cover.html）
 node promo/render.mjs --assets               重拍 9:41 的時鐘圖，三套主題 × 三種語言（assets/clock-0941.<主題>.<語言>.png）
 node promo/render.mjs --page livetest.html --stills 0,1,2   檢查真組件在虛擬時鐘上跑不跑得起來
 ```
@@ -93,6 +94,7 @@ node promo/music.mjs --mux     再和錄好的每種語言的影片合在一起 
 | `copy.js` | 所有字幕和文字，繁中、簡中、英文三份 |
 | `promo.css` | 官網的色彩、字體、桌布漸層和卡片樣式 |
 | `music.mjs` | 配樂：合成器、樂譜和音效時間點 |
+| `cover.html` | 影片封面（`?v=1|2&lang=…`） |
 | `clock.html`、`livetest.html` | 拍 9:41 時鐘圖；檢查真組件 |
 | `assets/` | 9:41 的時鐘圖（每種主題和語言各一張）；組件市場兩個組件的 2 倍預覽圖 |
 
