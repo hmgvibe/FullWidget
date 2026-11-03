@@ -105,4 +105,4 @@ jobs:
 
           [Privacy](https://github.com/${{ github.repository }}#privacy)
           "@
-          gh release create $tag (Get-ChildItem dist/*.zip | Where-Object Name -like "FullWidget-$($tag.TrimStart('v'))-*").FullName --draft --title "FullWidget $($tag.TrimStart('v'))" --notes $notes
+          gh release create $tag (Get-ChildItem dist -File | Where-Object { $_.Name -like "FullWidget-$($tag.TrimStart('v'))-*" -and $_.Extension -in '.zip', '.exe' }).FullName --draft --title "FullWidget $($tag.TrimStart('v'))" --notes $notes
