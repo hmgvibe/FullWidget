@@ -5,7 +5,7 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const { animate, inView, scroll } = window.Motion || {};
+  const { animate, inView, scroll, stagger } = window.Motion || {};
 
   // ───────────────────────── languages ─────────────────────────
   // Traditional Chinese is in the HTML; these are the other two.
@@ -43,6 +43,20 @@
       helpTitle: "第一次打开时", helpText: "Windows 可能显示「Windows 已保护你的电脑」。这是因为程序还没有代码签名（正在申请），不是病毒。",
       help1: "点 <b>更多信息</b>", help2: "点 <b>仍要运行</b>",
       footLabel: "页脚", footGuide: "开发文档", footPrivacy: "隐私", footNote: "© 2026 hmgvibe。「FullWidget」名称和标志不在开源许可范围内。",
+      navWidgets: "组件",
+      catKicker: "组件一览", catTitle: '38 个组件，<span class="nowrap">每天都用得上。</span>', catSub: "按分类看看都有什么。换个主题，每个组件都跟着变。",
+      catLabel: "分类", themeLabel: "主题", thInstrument: "量被画出来", thPaper: "书桌上的纸", thType: "玻璃上的字",
+      catMore: "显示全部 38 个", catAll: "全部", catTime: "时间", catWeather: "天气", catSystem: "系统", catProductivity: "效率", catInfo: "资讯", catMedia: "媒体与装饰",
+      detKicker: "小细节", detTitle: '用起来顺手的<span class="nowrap">小地方。</span>',
+      d1t: "靠近就对齐", d1p: "拖动时出现虚线参考线，靠近屏幕边缘或别的组件就吸过去，间距一样宽。按住 Ctrl 可以随意放。",
+      d2t: "拉大，内容跟着变大", d2p: "拖右下角改大小，文字和图表一起放大，不会只多出一片空白。",
+      d3t: "置顶，或沉到桌面", d3p: "每个组件可以选置顶、普通，或放在桌面层：被窗口盖住，不挡你做事。",
+      d4t: "卡片、毛玻璃、透明", d4p: "组件的底可以是实心卡片、毛玻璃，或完全透明只留文字；阴影也能关掉。",
+      d5t: "锁定和鼠标穿透", d5p: "锁定后就不会被误拖；开了穿透，点击会直接落到后面的桌面上。",
+      d6t: "同一个放好几个", d6p: "例如放三个时钟，各看一个时区；每个都有自己的设置和外观。",
+      d7t: "开机就在", d7p: "可以设置开机自动启动。组件的位置、大小和内容都会记住。",
+      d8t: "放进 U 盘带走", d8p: "在 FullWidget.exe 旁边放一个叫 portable 的空文件，设置就存在程序旁边，整个文件夹带着走。",
+      d9t: "三种语言", d9p: "繁体中文、简体中文和 English，跟随 Windows，也可以在设置里改。",
       copied: "已复制下载链接。FullWidget 是 Windows 电脑软件，请在电脑上打开。",
     },
     en: {
@@ -78,6 +92,20 @@
       helpTitle: "The first time you open it", helpText: "Windows may say “Windows protected your PC”. That's because the app isn't code-signed yet (we've applied); it isn't a virus.",
       help1: "Click <b>More info</b>", help2: "Click <b>Run anyway</b>",
       footLabel: "Footer", footGuide: "Developer guide", footPrivacy: "Privacy", footNote: "© 2026 hmgvibe. The FullWidget name and logo are not covered by the open-source license.",
+      navWidgets: "Widgets",
+      catKicker: "All widgets", catTitle: "38 widgets for every day.", catSub: "Browse them by group. Switch the theme and every widget changes with it.",
+      catLabel: "Group", themeLabel: "Theme", thInstrument: "Instrument", thPaper: "Paper", thType: "Glass",
+      catMore: "Show all 38", catAll: "All", catTime: "Time", catWeather: "Weather", catSystem: "System", catProductivity: "Productivity", catInfo: "Info", catMedia: "Media & decor",
+      detKicker: "Little things", detTitle: "The little things that make it easy.",
+      d1t: "Snaps into line", d1p: "Dashed guides appear as you drag; near a screen edge or another widget it snaps, with even gaps. Hold Ctrl to place it freely.",
+      d2t: "Bigger means bigger", d2p: "Drag the bottom-right corner to resize. Text and charts grow with it, instead of leaving empty space.",
+      d3t: "On top, or on the desktop", d3p: "Keep a widget on top, in the normal layer, or down on the desktop, where windows cover it and it never gets in the way.",
+      d4t: "Card, frosted or clear", d4p: "A widget can sit on a solid card or frosted glass, or be fully clear with only its text. Shadows can go too.",
+      d5t: "Lock and click-through", d5p: "Lock a widget so it can't be dragged by accident. With click-through on, clicks go straight to the desktop behind it.",
+      d6t: "As many as you like", d6p: "Put three clocks on the desktop, one per time zone. Each copy has its own settings and look.",
+      d7t: "There when you start", d7p: "Let it start with Windows. Where each widget sits, its size and what it shows are all remembered.",
+      d8t: "Take it with you", d8p: "Put an empty file named portable next to FullWidget.exe and settings stay beside the app, so the whole folder travels on a USB stick.",
+      d9t: "Three languages", d9p: "Traditional Chinese, Simplified Chinese and English. It follows Windows, or pick one in Settings.",
       copied: "Download link copied. FullWidget is a Windows PC app: open the link on your computer.",
     },
   };
@@ -92,6 +120,7 @@
   original._title = document.title;
   original._desc = $('meta[name="description"]').content;
   original.flowPause = "暫停"; original.flowPlay = "繼續";
+  Object.assign(original, { catAll: "全部", catTime: "時間", catWeather: "天氣", catSystem: "系統", catProductivity: "效率", catInfo: "資訊", catMedia: "媒體與裝飾" });
   original.copied = "已複製下載連結。FullWidget 是 Windows 電腦軟件，請在電腦上打開。";
 
   const supported = ["zh-TW", "zh-CN", "en"];
@@ -126,6 +155,7 @@
     for (const img of $$("img[data-app]")) img.src = `assets/app/${img.dataset.app}.${lang}.webp`;
     for (const fig of $$(".tile")) { const img = $("img", fig); img.src = pic(fig.dataset.folder, fig.dataset.theme); $("figcaption", fig).textContent = name(fig.dataset.folder); img.alt = name(fig.dataset.folder); }
     const pause = $(".flow-pause"); if (pause) pause.textContent = tr(flowPaused ? "flowPlay" : "flowPause");
+    catLang();
     codeLang();
   }
   for (const b of $$(".langs button")) b.addEventListener("click", () => {
@@ -213,6 +243,92 @@
     flow.append(pause);
   }
   function hash(s) { let h = 7; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 997; }
+
+  // ───────────────────────── ② every widget, by group ─────────────────────────
+  const GROUPS = ["time", "weather", "system", "productivity", "info", "media"];
+  const GROUP_KEY = { time: "catTime", weather: "catWeather", system: "catSystem", productivity: "catProductivity", info: "catInfo", media: "catMedia" };
+  const GROUP_WALL = { time: 0, weather: 2, system: 5, productivity: 3, info: 1, media: 4 };
+  // the same order as the README's list
+  const ORDER = ["clock", "analogclock", "flipclock", "worldclock", "calendar", "countdown", "pomodoro", "timer", "progress",
+    "weather", "forecast", "airquality", "sunmoon",
+    "sysinfo", "usage", "netspeed", "disks", "battery", "network", "pcinfo", "recyclebin", "volume", "power",
+    "notes", "todo", "launcher", "habits", "calculator", "search",
+    "infocard", "rss", "currency", "dailyimage", "onthisday",
+    "media", "photoframe", "whitenoise", "label"];
+  const grid = $("#catGrid"), chips = $("#catChips");
+  let catGroup = "all", catTheme = "instrument";
+  const text = (o) => (o ? o[lang] || o.en : "");
+  function buildCat() {
+    const rank = (f) => { const k = ORDER.indexOf(f); return k < 0 ? 999 : k; };
+    const list = [...widgets].sort((a, b) => GROUPS.indexOf(a.category) - GROUPS.indexOf(b.category) || rank(a.folder) - rank(b.folder));
+    grid.innerHTML = "";
+    for (const w of list) {
+      const li = document.createElement("li");
+      li.className = "w-item";
+      li.dataset.folder = w.folder;
+      li.dataset.group = w.category;
+      const box = document.createElement("div");
+      box.className = `w-pic wp${GROUP_WALL[w.category] ?? 5}`;
+      const img = document.createElement("img");
+      img.width = w.w; img.height = w.h;
+      img.loading = "lazy"; img.decoding = "async"; img.alt = "";
+      box.append(img);
+      li.append(box, document.createElement("h3"), document.createElement("p"));
+      grid.append(li);
+    }
+    chips.innerHTML = "";
+    for (const g of ["all", ...GROUPS]) {
+      const n = g === "all" ? widgets.length : widgets.filter((w) => w.category === g).length;
+      if (!n) continue;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.dataset.group = g;
+      b.setAttribute("aria-pressed", String(g === catGroup));
+      b.innerHTML = '<span></span><i class="mono"></i>';
+      $("i", b).textContent = n;
+      b.addEventListener("click", () => pickGroup(g));
+      chips.append(b);
+    }
+    catLang();
+  }
+  function catLang() {
+    for (const b of $$("button", chips)) $("span", b).textContent = tr(b.dataset.group === "all" ? "catAll" : GROUP_KEY[b.dataset.group]);
+    for (const li of $$(".w-item", grid)) {
+      const w = widgets.find((x) => x.folder === li.dataset.folder);
+      $("h3", li).textContent = text(w.name);
+      $("p", li).textContent = text(w.description);
+      $("img", li).src = pic(w.folder, catTheme);
+    }
+  }
+  function pickGroup(g) {
+    if (g === catGroup) return;
+    catGroup = g;
+    for (const b of $$("button", chips)) b.setAttribute("aria-pressed", String(b.dataset.group === g));
+    const shown = [];
+    for (const li of $$(".w-item", grid)) {
+      const on = g === "all" || li.dataset.group === g;
+      li.hidden = !on;
+      if (on) shown.push(li);
+    }
+    grid.classList.toggle("short", g === "all" && grid.classList.contains("short"));
+    $("#catMore").hidden = !(g === "all" && grid.classList.contains("short"));
+    if (animate && !reduce) animate(shown, { opacity: [0, 1], y: [14, 0] }, { duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: stagger ? stagger(0.025) : 0 });
+  }
+  // on a phone the full list starts folded after eight
+  $("#catMore").addEventListener("click", () => {
+    grid.classList.remove("short");
+    $("#catMore").hidden = true;
+    const rest = $$(".w-item", grid).slice(8);
+    if (animate && !reduce) animate(rest, { opacity: [0, 1], y: [14, 0] }, { duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: stagger ? stagger(0.03) : 0 });
+  });
+  for (const b of $$("#catThemes button")) b.addEventListener("click", () => {
+    if (b.dataset.theme === catTheme) return;
+    catTheme = b.dataset.theme;
+    for (const x of $$("#catThemes button")) x.setAttribute("aria-pressed", String(x === b));
+    const imgs = $$(".w-item:not([hidden]) img", grid);
+    for (const li of $$(".w-item", grid)) $("img", li).src = pic(li.dataset.folder, catTheme);
+    if (animate && !reduce) animate(imgs, { opacity: [0.2, 1], scale: [0.96, 1] }, { duration: 0.4, ease: [0.22, 1, 0.36, 1] });
+  });
 
   // ───────────────────────── ③ deeper as you scroll ─────────────────────────
   const desk = $("#desk"), frame = $("#clock");
@@ -320,7 +436,9 @@
   function entrances() {
     if (!inView || reduce) return;
     const groups = [
-      [".easy .kicker", ".easy .h2"], [".scene"], [".scene-steps li"], [".deep .kicker", ".deep .h2"],
+      [".easy .kicker", ".easy .h2"], [".scene"], [".scene-steps li"],
+      [".cat .kicker", ".cat .h2", ".cat .sec-sub", ".cat-bar"], [".deep .kicker", ".deep .h2"],
+      [".details-sec .kicker", ".details-sec .h2"], [".details li"],
       [".open .kicker", ".open .h2"], [".lead", ".side .entry"], [".get-main", ".get-help"],
     ];
     for (const sel of groups) {
@@ -362,6 +480,7 @@
   fetch("widgets.json").then((r) => r.json()).then((list) => {
     widgets = list;
     buildFlow();
+    buildCat();
     applyLang();
     let t = 0;
     addEventListener("resize", () => { clearTimeout(t); t = setTimeout(buildFlow, 150); });
