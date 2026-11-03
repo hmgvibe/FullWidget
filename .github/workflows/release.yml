@@ -93,6 +93,6 @@ jobs:
           - ``FullWidget-*-win-x64.zip``：需要 [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) / needs the .NET 9 Desktop Runtime
           - ``FullWidget-*-win-x64-full.zip``：不用另外安裝 / runs without installing anything
 
-          [Code signing policy](https://github.com/${{ github.repository }}#code-signing-policy) · [Privacy](https://github.com/${{ github.repository }}#privacy)
+          [Privacy](https://github.com/${{ github.repository }}#privacy)
           "@
           gh release create $tag (Get-ChildItem dist/*.zip | Where-Object Name -like "FullWidget-$($tag.TrimStart('v'))-*").FullName --draft --title "FullWidget $($tag.TrimStart('v'))" --notes $notes

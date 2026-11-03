@@ -13,6 +13,7 @@ Desktop widgets for Windows — [English below](#english).
 
 **需要：** Windows 11（Windows 10 沒有測試過），以及 Microsoft Edge WebView2 Runtime（Windows 11 已內建）。
 小的那個 zip 還需要 [.NET 9 桌面執行階段](https://dotnet.microsoft.com/download/dotnet/9.0)；沒有的話第一次打開時 Windows 會提示下載。檔名有 `full` 的那個不需要。
+**第一次打開時：** 程式沒有數位簽章，Windows 可能會顯示「Windows 已保護您的電腦」。按「其他資訊」→「仍要執行」就能打開，之後不會再問。
 
 **資料放在哪：** 設定和組件保存的內容在 `%AppData%\FullWidget`。想把資料和程式放在一起（例如放在隨身碟）：在 `FullWidget.exe` 旁邊建一個名為 `portable` 的空檔案，資料就會存在旁邊的 `data` 資料夾。
 
@@ -26,16 +27,6 @@ Desktop widgets for Windows — [English below](#english).
 - FullWidget 以 [GNU GPL 3.0](LICENSE) 授權：可以自由使用、修改和再發佈，但發佈修改過的版本時，也必須以 GPL 3.0 公開原始碼。
 - `sdk/` 和 `templates/` 以 [MIT](sdk/LICENSE) 授權：自己寫的組件可以用任何授權，包括不開源。
 - **名字和 logo**：「FullWidget」這個名字和 logo 不在上面的授權範圍內。修改過的版本請改用別的名字和圖標，不要讓人以為是官方版本。
-
-## Code signing policy（程式簽章政策）
-
-Windows 版的 `FullWidget.exe` 和 `FullWidget.dll` 會簽章：
-
-- 免費簽章服務由 [SignPath.io](https://about.signpath.io/) 提供，證書由 [SignPath Foundation](https://signpath.org/) 提供。
-- 只簽由這個儲存庫的原始碼、經 GitHub Actions 建置出來的檔案；每次發佈都要由核准者手動批准。
-- 成員和角色：
-  - 提交與審核（Committers and reviewers）：[hmgvibe](https://github.com/hmgvibe)
-  - 核准（Approvers）：[hmgvibe](https://github.com/hmgvibe)
 
 ## 隱私
 
@@ -63,6 +54,7 @@ Desktop widgets for Windows, 38 built in: clocks (digital, analog, flip, world),
 
 **Needs:** Windows 11 (Windows 10 is untested) and the Microsoft Edge WebView2 Runtime (built into Windows 11).
 The smaller zip also needs the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0); Windows offers to download it on first start. The `full` zip doesn't.
+**First start:** the app isn't code-signed, so Windows may show "Windows protected your PC". Click "More info" → "Run anyway"; it won't ask again.
 
 **Where data goes:** settings and what widgets save live in `%AppData%\FullWidget`. To keep data next to the app (on a USB stick, say), create an empty file named `portable` next to `FullWidget.exe`; data then goes into the `data` folder beside it.
 
@@ -71,13 +63,6 @@ The smaller zip also needs the [.NET 9 Desktop Runtime](https://dotnet.microsoft
 **Removing it:** quit FullWidget, run `FullWidget.exe --cleanup` from a command prompt (takes it out of startup and the .fwz file type), then delete the app folder. Data is in `%AppData%\FullWidget` and `%LocalAppData%\FullWidget`.
 
 **License:** FullWidget is licensed under the [GNU GPL 3.0](LICENSE): use, change and share it freely, but modified versions you distribute must also be GPL 3.0 with their source. `sdk/` and `templates/` are [MIT](sdk/LICENSE), so your own widgets can use any license, closed ones included. The name "FullWidget" and its logo are not covered by these licenses: please give modified versions another name and icon.
-
-### Code signing policy
-
-`FullWidget.exe` and `FullWidget.dll` are signed. Free code signing is provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/). Only files built from this repository by GitHub Actions are signed, and every release is approved by hand.
-
-- Committers and reviewers: [hmgvibe](https://github.com/hmgvibe)
-- Approvers: [hmgvibe](https://github.com/hmgvibe)
 
 ### Privacy
 
