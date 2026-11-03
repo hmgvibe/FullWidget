@@ -1,4 +1,4 @@
-# Builds the two release zips on GitHub, signs FullWidget.exe and FullWidget.dll with SignPath, and
+# Builds the two release zips and the installer on GitHub, signs FullWidget.exe and FullWidget.dll with SignPath, and
 # puts the zips into a draft release for a tag like v1.2.0 (publish it by hand on GitHub).
 #
 # Signing runs once the repository has these settings (Settings → Secrets and variables → Actions):
@@ -74,12 +74,21 @@ jobs:
         shell: pwsh
         run: ./build/publish.ps1 -Step pack
 
+      # the newest Inno Setup: the Chinese translations come with 6.5 and later
+      - name: Installer
+        shell: pwsh
+        run: |
+          choco upgrade innosetup -y --no-progress | Out-Null
+          ./build/publish.ps1 -Step installer
+
       - name: Keep the zips (manual run)
         if: "!startsWith(github.ref, 'refs/tags/')"
         uses: actions/upload-artifact@v4
         with:
           name: zips
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/*-setup.exe
 
       - name: Draft release
         if: startsWith(github.ref, 'refs/tags/')
@@ -90,6 +99,7 @@ jobs:
           $tag = '${{ github.ref_name }}'
           $notes = @"
           **下載 / Download**
+          - ``FullWidget-*-setup.exe``：安裝程式，推薦 / installer, recommended
           - ``FullWidget-*-win-x64.zip``：需要 [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) / needs the .NET 9 Desktop Runtime
           - ``FullWidget-*-win-x64-full.zip``：不用另外安裝 / runs without installing anything
 

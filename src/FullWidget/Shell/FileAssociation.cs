@@ -55,6 +55,10 @@ static class FileAssociation
     {
         try
         {
+            // only if the file type opens this copy: another copy (another folder) keeps its own
+            using (var cmd = Registry.CurrentUser.OpenSubKey(Classes + ProgId + @"\shell\open\command"))
+                if (cmd?.GetValue(null) is string c && Environment.ProcessPath is string exe
+                    && !c.StartsWith($"\"{exe}\"", StringComparison.OrdinalIgnoreCase)) return;
             bool any = false;
             foreach (var e in Extensions)
             {
