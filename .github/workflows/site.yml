@@ -12,11 +12,21 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
+  # A release run starts from its tag, which Pages refuses to deploy; hand over to a run on main.
+  relay:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run site.yml --repo "$GITHUB_REPOSITORY" --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
   build:
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
