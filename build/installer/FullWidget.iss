@@ -51,8 +51,10 @@ LanguageDetectionMethod=uilanguage
 CloseApplications=no
 
 [Languages]
-Name: "zhtw"; MessagesFile: "compiler:Languages\ChineseTraditional.isl"
-Name: "zhcn"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+; the Chinese translations are Inno Setup's own (jrsoftware/issrc, Files/Languages), kept here
+; because the released compiler doesn't include them yet
+Name: "zhtw"; MessagesFile: "ChineseTraditional.isl"
+Name: "zhcn"; MessagesFile: "ChineseSimplified.isl"
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
