@@ -17,7 +17,7 @@ Desktop widgets for Windows — [English below](#english).
 
 **資料放在哪：** 設定和組件保存的內容在 `%AppData%\FullWidget`。想把資料和程式放在一起（例如放在隨身碟）：在 `FullWidget.exe` 旁邊建一個名為 `portable` 的空檔案，資料就會存在旁邊的 `data` 資料夾。
 
-**自己寫組件：** 控制中心 →「添加組件」→「新建組件」，再按「開發文檔」看說明。
+**自己寫組件：** 右鍵系統匣圖標 →「添加組件」→「新建組件…」，或在控制中心「添加組件」頁右上角按「新建組件…」。說明在「開發文檔」。
 
 **移除：** 先退出 FullWidget，在命令列執行 `FullWidget.exe --cleanup`（從開機啟動和 .fwz 檔案類型中移除），再刪掉程式資料夾；資料在 `%AppData%\FullWidget` 和 `%LocalAppData%\FullWidget`。
 
@@ -58,7 +58,7 @@ The smaller zip also needs the [.NET 9 Desktop Runtime](https://dotnet.microsoft
 
 **Where data goes:** settings and what widgets save live in `%AppData%\FullWidget`. To keep data next to the app (on a USB stick, say), create an empty file named `portable` next to `FullWidget.exe`; data then goes into the `data` folder beside it.
 
-**Make your own widget:** Control Center → Add widgets → New widget, then open the Developer guide.
+**Make your own widget:** right-click the tray icon → Add widget → New widget…, or press New widget… at the top right of the Control Center's Add widgets page. See the Developer guide.
 
 **Removing it:** quit FullWidget, run `FullWidget.exe --cleanup` from a command prompt (takes it out of startup and the .fwz file type), then delete the app folder. Data is in `%AppData%\FullWidget` and `%LocalAppData%\FullWidget`.
 

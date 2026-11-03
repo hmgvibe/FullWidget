@@ -67,6 +67,8 @@ static class Menus
                 return Item(m.DisplayName, () => app.RequestAdd(m), hint: count > 0 ? Strings.AlreadyHave(count) : null, icon: Icons.For(m));
             }).ToList()))
             .ToList();
+        add.Add(Sep);
+        add.Add(Item(Strings.NewWidgetEllipsis, () => app.OpenControlCenter(page: "create")));
 
         var counts = windows.GroupBy(w => w.Manifest.Id).ToDictionary(g => g.Key, g => g.Count());
         var seen = new Dictionary<string, int>();

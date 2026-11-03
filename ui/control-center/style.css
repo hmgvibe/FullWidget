@@ -245,7 +245,18 @@ input[type="date"].field::-webkit-calendar-picker-indicator { filter: invert(1);
 .empty h3 { margin: 0; font-size: 16px; color: var(--fg); font-weight: 600; }
 
 /* ── gallery ── */
-.head-tools { display: flex; align-items: center; gap: 10px; }
+.page-head h1 { white-space: nowrap; }
+.head-tools { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.btn.tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+/* a narrow window: the search box gives way first, then the two buttons keep only their icons */
+@media (max-width: 1060px) {
+  .head-tools .search .field { width: 180px; }
+  .btn.tool { width: 32px; padding: 0; }
+  .btn.tool span { display: none; }
+}
+@media (max-width: 940px) {
+  .head-tools .search .field { width: 150px; }
+}
 .search { position: relative; display: flex; align-items: center; }
 .search svg { position: absolute; left: 10px; width: 15px; height: 15px; fill: none; stroke: var(--faint); stroke-width: 1.8; stroke-linecap: round; pointer-events: none; }
 .search .field { width: 210px; padding-left: 32px; }

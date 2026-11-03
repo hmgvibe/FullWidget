@@ -22,6 +22,7 @@ static class Strings
 
     // ── tray & menus ──
     public static string AddWidget => T("添加組件", "添加组件", "Add widget");
+    public static string NewWidgetEllipsis => T("新建組件…", "新建组件…", "New widget…");
     public static string MyWidgets => T("我的組件", "我的组件", "My widgets");
     public static string CategoryTime => T("時間", "时间", "Time");
     public static string CategoryWeather => T("天氣", "天气", "Weather");

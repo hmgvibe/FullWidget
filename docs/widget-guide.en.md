@@ -22,7 +22,7 @@ We'll make a "Daily quote" widget: one quote a day, a button for the next one, a
 ### 1. Create the widget (1 minute)
 
 1. Click the tray icon to open the Control Center.
-2. Go to **Add widgets** and, on the last card, **Make your own**, press **New widget**.
+2. On the Control Center's **Add widgets** page, press **New widget…** at the top right (just a "+" when the window is narrow). Or right-click the tray icon → **Add widget** → **New widget…**.
 3. Type the name `Daily Quote` and press **Create**.
 
 FullWidget then:

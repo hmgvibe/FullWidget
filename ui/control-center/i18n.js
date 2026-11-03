@@ -127,6 +127,8 @@ const PHRASES = [
   ["自己寫一個組件", "自己写一个组件", "Make your own"],
   ["從模板開始，十分鐘做出第一個。改了檔案存檔，桌面上就會更新。", "从模板开始，十分钟做出第一个。改了文件保存，桌面上就会更新。", "Start from a template and have one running in ten minutes. Save a file and the desktop updates."],
   ["新建組件", "新建组件", "New widget"],
+  ["新建組件…", "新建组件…", "New widget…"],
+  ["用 HTML / CSS / JS 自己寫一個", "用 HTML / CSS / JS 自己写一个", "Write your own in HTML / CSS / JS"],
   ["開發文檔", "开发文档", "Developer guide"],
   ["放進新的組件資料夾後按這裏", "放进新的组件文件夹后按这里", "Press after adding a widget folder"],
   ["重新掃描", "重新扫描", "Rescan"],
