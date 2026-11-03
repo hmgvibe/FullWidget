@@ -89,12 +89,28 @@ function render() {
     : t({ "zh-TW": `${d} 更新`, "zh-CN": `${d} 更新`, en: `Updated ${d}` });
 }
 
+/** The whole text must be an amount: "1000", "1,000.50", ".5", full-width digits too. Empty is
+ *  null (no amount); anything else ("12abc", "1.2.3") is NaN. */
+function readAmount(text) {
+  const s = text.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[．。]/g, ".").replace(/[，、]/g, ",").replace(/\s/g, "");
+  if (!s) return null;
+  if (!/^(\d{1,3}(,\d{3})+|\d+)(\.\d*)?$|^\.\d+$/.test(s)) return NaN;
+  return Number(s.replace(/,/g, ""));
+}
+
 $("amt").addEventListener("input", () => {
-  const v = parseFloat($("amt").value.replace(/[,，\s]/g, ""));
-  amount = Number.isFinite(v) && v >= 0 ? v : null;
+  const v = readAmount($("amt").value);
+  const bad = Number.isNaN(v);
+  $("amt").classList.toggle("bad", bad);
+  $("amt").toggleAttribute("aria-invalid", bad);
+  $("amt-hint").hidden = !bad;
+  // a typo converts nothing and isn't saved: the last good amount stays for next time
+  amount = bad ? null : v;
   render();
-  widget.storage.set("amount", amount);
+  if (!bad) widget.storage.set("amount", amount);
 });
+$("amt-hint").textContent = t({ "zh-TW": "只能填數字，例如 1,000.50", "zh-CN": "只能填数字，例如 1,000.50", en: "Numbers only, e.g. 1,000.50" });
 // the service's terms ask for this credit
 $("credit").textContent = t({ "zh-TW": "資料：ExchangeRate-API", "zh-CN": "数据：ExchangeRate-API", en: "Rates by ExchangeRate-API" });
 $("credit").onclick = (e) => { e.preventDefault(); widget.shell.open("https://www.exchangerate-api.com").catch(() => {}); };

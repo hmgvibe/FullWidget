@@ -4,6 +4,8 @@ body { container-type: size; display: flex; flex-direction: column; gap: 0.45rem
 .amount { display: flex; align-items: center; gap: 0.5rem; }
 .amt { flex: 1; min-width: 0; font-family: var(--w-font-num); font-size: 1.05rem; text-align: right; padding: 4px 10px; }
 .amt::placeholder { font-family: var(--w-font); font-size: 0.86rem; }
+.amt.bad { outline: 1.5px solid var(--w-danger); outline-offset: 0; }
+.amt-hint { margin-top: -0.2rem; font-size: 0.75rem; color: var(--w-danger); text-align: right; }
 .base { font-family: var(--w-font-num); font-size: 1rem; color: var(--w-fg-muted); min-width: 2.6em; }
 
 .rows { list-style: none; margin: 0; padding: 0; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; mask-image: linear-gradient(#000 calc(100% - 14px), transparent); }

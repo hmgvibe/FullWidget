@@ -59,18 +59,26 @@ function parse(xml) {
   };
 }
 
+/** Each refresh gets a number; an answer that comes back after a newer refresh started (the
+ *  address was changed meanwhile) is dropped, so a slow old feed can't replace the new one. */
+let refreshes = 0;
 async function refresh() {
+  const seq = ++refreshes;
   const url = address();
   if (!url) { showMessage(t({ "zh-TW": "在設定裏填上 RSS 網址", "zh-CN": "在设置里填写 RSS 网址", en: "Add a feed address in Settings" }), false); return; }
   try {
     const r = await widget.fetch(url, { headers: { Accept: "application/rss+xml, application/atom+xml, application/xml, text/xml" } });
+    if (seq !== refreshes) return;
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const f = parse(await r.text());
+    const text = await r.text();
+    if (seq !== refreshes) return;
+    const f = parse(text);
     f.items = f.items.filter((i) => i.title).slice(0, 40);
     feed = { url, at: Date.now(), ...f };
     failed = false;
     widget.storage.set("last", feed);
   } catch (e) {
+    if (seq !== refreshes) return;
     widget.log(`rss: ${e.message}`);
     failed = true;
     if (!feed || feed.url !== url) {
