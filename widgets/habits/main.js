@@ -27,6 +27,20 @@ function streak(h) {
   return n;
 }
 
+/** Keeps the last year, plus every day of the newest unbroken run, however long: the streak is
+ *  counted from these days, so cutting into the run would cap it (it stopped at 367). */
+function prune(days) {
+  const set = new Set(days);
+  const keep = new Set();
+  const newest = [...set].sort().pop();
+  if (newest) {
+    const [y, m, d] = newest.split("-").map(Number);
+    for (let day = new Date(y, m - 1, d); set.has(dayKey(day)); day = shift(day, -1)) keep.add(dayKey(day));
+  }
+  const cut = dayKey(shift(new Date(), -366));
+  return [...set].filter((d) => d >= cut || keep.has(d)).sort();
+}
+
 function render() {
   const now = new Date();
   const today = dayKey(now);
@@ -65,10 +79,7 @@ $("list").addEventListener("click", (e) => {
   if (tick) {
     const h = habits[+tick.dataset.i];
     const key = dayKey(new Date());
-    h.done = h.done.includes(key) ? h.done.filter((d) => d !== key) : [...h.done, key];
-    // keep a year at most
-    const cut = dayKey(shift(new Date(), -366));
-    h.done = h.done.filter((d) => d >= cut).sort();
+    h.done = prune(h.done.includes(key) ? h.done.filter((d) => d !== key) : [...h.done, key]);
     save();
     render();
     if (h.done.includes(key)) {
