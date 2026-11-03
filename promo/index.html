@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FullWidget 宣傳片</title>
+  <link rel="stylesheet" href="promo.css">
+</head>
+<body>
+  <div id="viewport"><div id="stage"></div></div>
+  <div id="bar">
+    <button id="play" type="button">暫停</button>
+    <div class="track" id="track"><div class="rail"></div><div class="fill" id="fill"></div></div>
+    <span id="time">0.00 s · 第 1 小節</span>
+  </div>
+  <!-- the website's stand-in host, to run the real clock widget -->
+  <script src="../site/widget-host.js"></script>
+  <script src="engine.js"></script>
+  <script src="copy.js"></script>
+  <script src="scenes.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

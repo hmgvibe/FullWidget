@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>clock at 9:41</title>
+  <!-- The clock widget at its own size, always 9:41: render.mjs --assets photographs it at 2× for
+       the tiles, so the clock in the waterfall shows the same time as the live one on the desk. -->
+  <style>html, body { margin: 0; background: transparent; } iframe { display: block; width: 300px; height: 150px; border: 0; background: transparent; }</style>
+</head>
+<body>
+  <iframe id="f" scrolling="no"></iframe>
+  <script src="../site/widget-host.js"></script>
+  <script>
+    const FIXED_TIME = "<script>(function(){var R=Date,T=new R(2026,10,3,9,41,0).getTime();" +
+      "class D extends R{constructor(...a){super(...(a.length?a:[T]))}static now(){return T}}window.Date=D;})();<\/script>" +
+      "<style>*,*::before,*::after{transition:none!important;animation:none!important}</style>";
+    const theme = new URLSearchParams(location.search).get("theme") || "instrument";
+    window.PROMO_ASSET = FWHost.mount(document.getElementById("f"), {
+      folder: "clock", root: "../", locale: "zh-TW", theme, head: FIXED_TIME,
+      settings: { showSeconds: false, showDate: true, use24h: true },
+    }).then(() => document.fonts.ready).then(() => new Promise((r) => setTimeout(r, 400))).then(() => true);
+  </script>
+</body>
+</html>

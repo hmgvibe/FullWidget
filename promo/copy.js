@@ -1,0 +1,35 @@
+/* Every word in the promo. Taken from the website's copy where it says the same thing. */
+window.COPY = {
+  lang: "zh-TW",
+  wordmark: "FullWidget",
+  s1: { title: "38 個組件。", sub: ["時鐘、天氣、系統、效率、媒體，", "打開就有。"] },
+  s2: { title: "三套主題，一鍵換裝。", themes: ["量被畫出來", "書桌上的紙", "玻璃上的字"] },
+  s3: { title: "拖過去，自動對齊。", sub: ["靠近就吸附，", "放開就排好。"] },
+  s4: { title: "會寫網頁，就會寫組件。", sub: ["HTML、CSS、JS，", "改了馬上看到。"] },
+  s5: { title: "大家做的組件，一鍵安裝。", sub: ["要什麼權限，", "安裝前說清楚。"] },
+  hi: { title: "早安", line: "今天也要好好的" },
+  cc: {
+    title: "FullWidget 控制中心",
+    nav: ["我的組件", "添加組件", "主題", "設定"],
+    heading: "添加組件",
+    tabs: ["已安裝", "線上"],
+    install: "安裝",
+    you: "你 · v1.0.0",
+    reviewing: "審核中",
+  },
+  market: [
+    { folder: "hmgvibe.eyebreak", name: "護眼提醒", by: "hmgvibe · v1.0.0", note: "需要：通知" },
+    { folder: "hmgvibe.proverb", name: "每日一句", by: "hmgvibe · v1.0.0", note: "不需要權限" },
+  ],
+  sheet: {
+    title: "安裝「護眼提醒」",
+    by: "hmgvibe · v1.0.0",
+    needs: "它要：",
+    items: ["顯示通知（每 20 分鐘提醒你看遠處 20 秒）"],
+    no: "不會連網，也讀不到你電腦上的檔案。",
+    cancel: "取消",
+    ok: "安裝並放到桌面",
+  },
+  s6: { lines: ["免費。", "開源。", "什麼都不收集。"], zeros: ["帳號", "廣告", "統計"], gpl: "GPL-3.0", repo: "github.com/hmgvibe/FullWidget" },
+  s7: { tagline: "一個不一樣的 Windows 桌面小組件", cta: "免費下載", url: "hmgvibe.github.io/FullWidget", req: "Windows 11" },
+};

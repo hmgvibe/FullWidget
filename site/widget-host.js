@@ -13,16 +13,20 @@
     paper: ":root{--w-system-accent:#4cc2ff;--w-bg:rgba(243,238,227,1);--w-bg-solid:rgb(243,238,227);--w-fg:#1f1c18;--w-accent:#c23b2b;--w-radius:4px;--w-padding:18px;}",
   };
 
-  const abs = (p) => new URL(p, document.baseURI).href;
+  let root = document.baseURI;
+  const abs = (p) => new URL(p, root).href;
   let seq = 0;
   const themeCss = async (theme) => THEMES[theme] || THEMES.instrument;
 
   /**
    * Runs a built-in widget in `frame` (an <iframe>).
-   * options: folder ("clock"), locale, theme, settings (overrides), size {width, height} in CSS px.
+   * options: folder ("clock"), locale, theme, settings (overrides), size {width, height} in CSS px,
+   * root (where widgets/ and sdk/ are; default: this page's folder), head (extra HTML placed in
+   * the widget's <head> before anything else, e.g. a fixed clock for the promo video).
    * Returns { setTheme(theme), setLook(css), setLocale(locale) }.
    */
   async function mount(frame, options) {
+    if (options.root) root = new URL(options.root, document.baseURI).href;
     const id = "w" + ++seq;
     const base = abs(`widgets/${options.folder}/`);
     const manifest = await (await fetch(base + "widget.json")).json();
@@ -76,7 +80,7 @@
       addEventListener:function(t,f){if(t==="message")ls.push(f)},removeEventListener:function(t,f){ls=ls.filter(function(x){return x!==f})}};
       window.__fwDeliver=function(m){ls.forEach(function(f){f({data:m})})};})();<\/script>`;
     const a = boot.appearance;
-    const head = `<base href="${base}">` +
+    const head = (options.head || "") + `<base href="${base}">` +
       `<link rel="stylesheet" href="${abs("sdk/base.css")}">` +
       `<link id="__fw_theme_link" rel="stylesheet" href="${a.themeHref}">` +
       `<style id="__fw_theme">${a.themeCss}</style>` +

@@ -11,3 +11,7 @@ market/
 # design drafts and screenshots
 .oil-ui/
 _site/
+
+# promo video output and downloaded tools (ffmpeg)
+promo/out/
+.tools/
