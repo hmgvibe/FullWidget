@@ -184,10 +184,13 @@ function highlight(el) {
   const page = el.closest(".panel");
   const wasHidden = hl.style.opacity !== "1";
   hl.classList.toggle("jump", wasHidden); // appear in place; slide only between entries
+  // Measured against the page and divided by its current scale: while the menu opens (scaled to
+  // 98 %) the on-screen boxes are smaller, and the highlight would stay off after the animation.
   const r = el.getBoundingClientRect(), pr = page.getBoundingClientRect();
-  hl.style.transform = `translate(${r.left - pr.left}px, ${r.top - pr.top}px)`;
-  hl.style.width = `${r.width}px`;
-  hl.style.height = `${r.height}px`;
+  const k = pr.width / page.offsetWidth || 1;
+  hl.style.transform = `translate(${(r.left - pr.left) / k}px, ${(r.top - pr.top) / k}px)`;
+  hl.style.width = `${r.width / k}px`;
+  hl.style.height = `${r.height / k}px`;
   hl.style.opacity = "1";
 }
 
