@@ -1,4 +1,4 @@
-; The FullWidget installer (Inno Setup 6.5 or newer).
+﻿; The FullWidget installer (Inno Setup 6.5 or newer).
 ;   iscc /DAppVersion=1.2.2 /DSourceDir=..\..\dist\FullWidget-1.2.2-win-x64-full\FullWidget /DOutputDir=..\..\dist build\installer\FullWidget.iss
 ; build\publish.ps1 -Step installer does this after building the full (self-contained) folder.
 ;
@@ -38,6 +38,7 @@ MinVersion=10.0.17763
 OutputDir={#OutputDir}
 OutputBaseFilename=FullWidget-{#AppVersion}-setup
 SetupIconFile=..\..\src\FullWidget\app.ico
+WizardSmallImageFile=header-55.bmp,header-64.bmp,header-69.bmp,header-83.bmp,header-92.bmp,header-110.bmp,header-119.bmp,header-138.bmp
 UninstallDisplayIcon={app}\FullWidget.exe
 UninstallDisplayName=FullWidget
 WizardStyle=modern
@@ -57,17 +58,13 @@ Name: "zhcn"; MessagesFile: "ChineseSimplified.isl"
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
-zhtw.DesktopIcon=在桌面建立捷徑
-zhcn.DesktopIcon=在桌面创建快捷方式
-en.DesktopIcon=Create a desktop shortcut
-zhtw.AutoStart=開機時自動啟動 FullWidget
-zhcn.AutoStart=开机时自动启动 FullWidget
+zhtw.DesktopIcon=鍦ㄦ闈㈠缓绔嬫嵎寰?zhcn.DesktopIcon=鍦ㄦ闈㈠垱寤哄揩鎹锋柟寮?en.DesktopIcon=Create a desktop shortcut
+zhtw.AutoStart=闁嬫鏅傝嚜鍕曞暉鍕?FullWidget
+zhcn.AutoStart=寮€鏈烘椂鑷姩鍚姩 FullWidget
 en.AutoStart=Start FullWidget with Windows
-zhtw.Extras=其他：
-zhcn.Extras=其他：
-en.Extras=Extras:
-zhtw.LaunchNow=現在打開 FullWidget
-zhcn.LaunchNow=现在打开 FullWidget
+zhtw.Extras=鍏朵粬锛?zhcn.Extras=鍏朵粬锛?en.Extras=Extras:
+zhtw.LaunchNow=鐝惧湪鎵撻枊 FullWidget
+zhcn.LaunchNow=鐜板湪鎵撳紑 FullWidget
 en.LaunchNow=Open FullWidget now
 
 [Tasks]
