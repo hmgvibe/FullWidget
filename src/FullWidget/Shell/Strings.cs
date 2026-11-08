@@ -82,6 +82,8 @@ static class Strings
     public static string FilterPrograms => T("程式和捷徑|*.exe;*.lnk;*.url;*.appref-ms;*.bat;*.cmd|所有檔案|*.*", "程序和快捷方式|*.exe;*.lnk;*.url;*.appref-ms;*.bat;*.cmd|所有文件|*.*", "Programs and shortcuts|*.exe;*.lnk;*.url;*.appref-ms;*.bat;*.cmd|All files|*.*");
     public static string FilterImages => T("圖片|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.bmp|所有檔案|*.*", "图片|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.bmp|所有文件|*.*", "Pictures|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.bmp|All files|*.*");
     public static string FilterAll => T("所有檔案|*.*", "所有文件|*.*", "All files|*.*");
+    public static string ShortcutInvalid => T("這個組合不能用，需要包含 Ctrl、Alt、Shift 或 Win（F1–F24 可單獨使用）", "这个组合不能用，需要包含 Ctrl、Alt、Shift 或 Win（F1–F24 可单独使用）", "That combination can't be used: include Ctrl, Alt, Shift or Win (F1–F24 work alone)");
+    public static string ShortcutInUse => T("這個組合已經用在另一個快捷鍵上", "这个组合已经用在另一个快捷键上", "That combination is already used by another shortcut");
     public static string PickPackageTitle => T("選擇要安裝的組件", "选择要安装的组件", "Choose a widget to install");
     public static string PackageFilter => T("FullWidget 組件 (*.fwz)|*.fwz;*.dwz|Zip 壓縮檔 (*.zip)|*.zip", "FullWidget 组件 (*.fwz)|*.fwz;*.dwz|Zip 压缩文件 (*.zip)|*.zip", "FullWidget widget (*.fwz)|*.fwz;*.dwz|Zip archive (*.zip)|*.zip");
     public static string ExportTitle => T("匯出組件", "导出组件", "Export widget");

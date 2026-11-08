@@ -363,8 +363,46 @@ sealed class WidgetWindow : NativeWindow
         t.Start();
     }
 
+    /// When this widget last had the keyboard (Environment.TickCount64), 0 if never.
+    public long ActivatedAt { get; private set; }
+
+    bool peeking;
+    IntPtr peekFrom; // the window that had the keyboard before
+    /// Called up with a shortcut: above everything and holding the keyboard.
+    public bool Peeking => peeking;
+
+    /// The notes shortcut: lifts the widget above every window (showing it even if widgets are
+    /// hidden), gives it the keyboard and tells the page, so it can focus its text box. It goes
+    /// back to its own layer once another window is used or the shortcut is pressed again.
+    public void Peek(bool on, bool giveBack = false)
+    {
+        if (peeking == on || closing) return;
+        peeking = on;
+        if (on)
+        {
+            peekFrom = GetForegroundWindow();
+            ApplyVisibility();
+            SetWindowLongPtr(Handle, GWLP_HWNDPARENT, IntPtr.Zero); // a desktop-layer owner would hold it down
+            SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+            SetForegroundWindow(Handle); // allowed: the shortcut's key press belongs to this app
+            // a window that was just sent back down doesn't take "topmost" until it's active again
+            SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            controller?.MoveFocus(CoreWebView2MoveFocusReason.Programmatic);
+            Send("summon", null);
+        }
+        else
+        {
+            ApplyLayer();
+            ApplyVisibility();
+            // put away with the shortcut: typing goes back to where it was
+            if (giveBack && peekFrom != IntPtr.Zero && peekFrom != Handle && IsWindow(peekFrom)) SetForegroundWindow(peekFrom);
+            peekFrom = IntPtr.Zero;
+        }
+    }
+
     void ApplyLayer()
     {
+        if (peeking) return;
         const uint keep = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
         if (DesktopLayer)
         {
@@ -393,7 +431,7 @@ sealed class WidgetWindow : NativeWindow
     void ShowNoActivate()
     {
         ShowWindow(Handle, SW_SHOWNOACTIVATE);
-        if (DesktopLayer) PlaceAboveDesktop();
+        if (DesktopLayer && !peeking) PlaceAboveDesktop();
     }
 
     bool userHidden, paused;
@@ -418,7 +456,7 @@ sealed class WidgetWindow : NativeWindow
 
     void ApplyVisibility()
     {
-        bool hide = userHidden || paused;
+        bool hide = (userHidden || paused) && !peeking;
         if (hidden == hide || closing) return;
         hidden = hide;
         if (hide)
@@ -516,8 +554,11 @@ sealed class WidgetWindow : NativeWindow
                 // to the top. Put a desktop-layer widget straight back under the app windows.
                 // (Blocking the lift up front doesn't work: the click lands in the WebView's
                 // window, which belongs to another process and never forwards WM_MOUSEACTIVATE.)
-                if (DesktopLayer && (m.WParam.ToInt64() & 0xFFFF) != WA_INACTIVE)
-                    app.Post(() => { if (!closing && DesktopLayer) PlaceAboveDesktop(); });
+                if ((m.WParam.ToInt64() & 0xFFFF) != WA_INACTIVE) ActivatedAt = Environment.TickCount64;
+                if (peeking && (m.WParam.ToInt64() & 0xFFFF) == WA_INACTIVE)
+                    app.Post(() => Peek(false)); // another window was used: back to its layer
+                else if (DesktopLayer && !peeking && (m.WParam.ToInt64() & 0xFFFF) != WA_INACTIVE)
+                    app.Post(() => { if (!closing && DesktopLayer && !peeking) PlaceAboveDesktop(); });
                 break;
 
             case WM_GETMINMAXINFO:
@@ -803,7 +844,12 @@ sealed class WidgetWindow : NativeWindow
         return d;
     }
 
-    public void OnPageReady() => pageReady = true;
+    public void OnPageReady()
+    {
+        pageReady = true;
+        // called up before the page had loaded (a note just added by the shortcut)
+        if (peeking) { controller?.MoveFocus(CoreWebView2MoveFocusReason.Programmatic); Send("summon", null); }
+    }
 
     /// Pushes an event to the page: { ev, d }.
     public void Send(string ev, object? data)

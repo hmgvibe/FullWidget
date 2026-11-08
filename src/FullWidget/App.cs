@@ -27,6 +27,8 @@ sealed class App : ApplicationContext
     public Market Market { get; }
     public WidgetBridge Bridge { get; }
     public CoreWebView2Environment? Env { get; private set; }
+    /// System-wide shortcuts; null until start-up has finished.
+    public Hotkeys? Keys { get; private set; }
 
     readonly Dictionary<string, WidgetWindow> windows = new();
     readonly SynchronizationContext ui;
@@ -173,6 +175,8 @@ sealed class App : ApplicationContext
             }
             foreach (var inst in Config.Data.Instances.ToList()) Open(inst);
             Log.Info($"Started with {windows.Count} widget(s)");
+            Keys = new Hotkeys(RunShortcut);
+            Keys.Apply(Config.Data.Hotkeys);
 
             if (Config.Data.DeveloperMode) StartHotReload();
 
@@ -471,6 +475,47 @@ sealed class App : ApplicationContext
     public void SetAllLocked(bool locked)
     {
         foreach (var w in Windows) { w.Cfg.Locked = locked; w.ApplyState(); }
+        Config.SaveSoon();
+    }
+
+    // ───────────────────────── shortcuts ─────────────────────────
+
+    void RunShortcut(string action)
+    {
+        if (action == Hotkeys.ToggleAll) SetHideAll(!Config.Data.HideAll);
+        else if (action == Hotkeys.Notes) ToggleNotes();
+    }
+
+    const string NotesWidget = "fullwidget.notes";
+
+    /// The notes shortcut: the note used last comes above everything, ready to type in; pressed
+    /// again it goes back. With no note on the desktop yet, one is added.
+    void ToggleNotes()
+    {
+        var notes = Windows.Where(w => w.Manifest.Id.Equals(NotesWidget, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (notes.FirstOrDefault(w => w.Peeking) is { } up) { up.Peek(false, giveBack: true); return; }
+        if (notes.Count == 0)
+        {
+            if (Catalog.Find(NotesWidget) is not { } m) return;
+            var inst = AddInstance(m);
+            Config.SaveSoon();
+            Log.Info($"Added {NotesWidget} as {inst.Id} for the notes shortcut");
+            if (Open(inst) is not { } w) return;
+            notes.Add(w);
+        }
+        notes.MaxBy(w => w.ActivatedAt)!.Peek(true);
+    }
+
+    /// Changes one shortcut; "" turns it off.
+    public void SetShortcut(string action, string keys)
+    {
+        if (!Hotkeys.Actions.Contains(action)) throw new BridgeException($"unknown shortcut '{action}'");
+        keys = keys.Trim();
+        if (keys.Length > 0 && !Hotkeys.TryParse(keys, out _, out _)) throw new BridgeException(Strings.ShortcutInvalid);
+        var other = Config.Data.Hotkeys.FirstOrDefault(kv => kv.Key != action && kv.Value.Equals(keys, StringComparison.OrdinalIgnoreCase));
+        if (keys.Length > 0 && other.Key != null) throw new BridgeException(Strings.ShortcutInUse);
+        Config.Data.Hotkeys[action] = keys;
+        Keys?.Apply(Config.Data.Hotkeys);
         Config.SaveSoon();
     }
 
@@ -924,6 +969,7 @@ sealed class App : ApplicationContext
         Notifier.Dispose();
         Audio.Dispose();
         Media.Dispose();
+        Keys?.Dispose();
         tray.Dispose();
         base.ExitThreadCore();
     }

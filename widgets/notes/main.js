@@ -30,3 +30,10 @@ box.addEventListener("blur", save);
 applySettings(widget.settings.get());
 widget.settings.onChange(applySettings);
 widget.storage.get("text").then((v) => { box.value = v || ""; showCount(); });
+
+// called up with the notes shortcut: ready to type at the end
+widget.on("summon", () => {
+  box.focus();
+  box.setSelectionRange(box.value.length, box.value.length);
+  box.scrollTop = box.scrollHeight;
+});

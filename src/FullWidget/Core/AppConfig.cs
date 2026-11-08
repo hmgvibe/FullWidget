@@ -27,6 +27,8 @@ sealed class AppConfig
     public bool FileAssociation { get; set; } = true;
     /// The widget market's index.json; empty = the default (Core/Market.cs).
     public string? MarketUrl { get; set; }
+    /// System-wide shortcuts by action (Shell/Hotkeys.cs), e.g. "notes": "Ctrl+Alt+N"; "" = off.
+    public Dictionary<string, string> Hotkeys { get; set; } = FullWidget.Shell.Hotkeys.Defaults();
     public List<InstanceConfig> Instances { get; set; } = new();
 }
 

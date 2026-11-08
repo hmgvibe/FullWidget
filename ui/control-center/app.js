@@ -575,6 +575,9 @@ function pageSettings() {
         <div class="group-title">${t("桌面")}</div>
         ${row("隱藏全部組件", "暫時收起所有組件；它們會停止更新，不佔用處理器。", control({ key: "hideAll", type: "toggle", label: "隱藏全部組件" }, S.hideAll, "app"), { key: "hide" })}
         ${row("鎖定位置", "一次鎖定或解鎖所有組件。", `<button class="btn" data-action="lockAll" data-on="true">${t("全部鎖定")}</button><button class="btn quiet" data-action="lockAll" data-on="false">${t("全部解鎖")}</button>`, { key: "lock" })}
+        <div class="group-title">${t("快捷鍵")}</div>
+        ${row("顯示／隱藏全部組件", "在任何地方按下都能切換。", hotkeyCtl("toggleAll"), { key: "hk-all", stack: true })}
+        ${row("叫出便籤", "便籤會來到最前面，直接打字；再按一次或點別處就回去。桌面上沒有便籤時會新增一張。", hotkeyCtl("notes"), { key: "hk-notes", stack: true })}
         <div class="group-title">${t("效能")}</div>
         ${row("全螢幕時暫停", "玩遊戲、看全螢幕影片或簡報時，那個螢幕上的組件會隱藏並停止更新。", control({ key: "pauseFullscreen", type: "toggle", label: "全螢幕時暫停" }, S.pauseFullscreen, "app"), { key: "pausefs" })}
         ${row("低資源模式", "關閉 GPU 加速並降低記憶體目標，約省 15 MB；複雜動畫會改由處理器繪製。", control({ key: "lowResource", type: "toggle", label: "低資源模式" }, S.lowResource, "app") , { key: "low" })}
@@ -589,6 +592,86 @@ function pageSettings() {
       </div></section>
     </div>`;
 }
+
+// ───────────────────────── shortcuts ─────────────────────────
+
+let recording = null;    // which shortcut is waiting for keys
+let recordHint = "";     // why the last key press wasn't taken
+
+const KEY_LABEL = { Up: "↑", Down: "↓", Left: "←", Right: "→", Win: "Win" };
+
+function hotkeyCtl(action) {
+  const h = (S.hotkeys || {})[action] || { keys: "", ok: true };
+  const rec = recording === action;
+  const keys = h.keys
+    ? h.keys.split("+").map((k) => `<kbd>${esc(KEY_LABEL[k] || k)}</kbd>`).join("")
+    : `<span class="none">${t("未設定")}</span>`;
+  const note = rec
+    ? `<small class="hk-note">${esc(recordHint || t("按下新的組合，Esc 取消，Backspace 清除"))}</small>`
+    : !h.ok ? `<small class="hk-note warn">${t("已被其他程式佔用，換一個組合吧")}</small>` : "";
+  return `<div class="hotkey${rec ? " rec" : ""}${h.ok ? "" : " bad"}">
+      <button class="keys" data-action="hotkeyRecord" data-hk="${action}" aria-label="${esc(t("更改快捷鍵"))}">${rec ? `<span class="wait">${t("請按鍵…")}</span>` : keys}</button>
+      ${h.keys && !rec ? `<button class="link" data-action="hotkeyClear" data-hk="${action}">${t("清除")}</button>` : ""}
+    </div>${note}`;
+}
+
+/** KeyboardEvent.code → the name the host understands ("A", "5", "F7", "Num3", "Up", "`"…). */
+function keyName(code) {
+  let m;
+  if ((m = code.match(/^Key([A-Z])$/))) return m[1];
+  if ((m = code.match(/^Digit(\d)$/))) return m[1];
+  if ((m = code.match(/^Numpad(\d)$/))) return "Num" + m[1];
+  if (/^F([1-9]|1\d|2[0-4])$/.test(code)) return code;
+  if ((m = code.match(/^Arrow(Up|Down|Left|Right)$/))) return m[1];
+  const named = {
+    Space: "Space", Home: "Home", End: "End", PageUp: "PageUp", PageDown: "PageDown", Insert: "Insert", Delete: "Delete",
+    Backquote: "`", Minus: "-", Equal: "=", BracketLeft: "[", BracketRight: "]", Backslash: "\\",
+    Semicolon: ";", Quote: "'", Comma: ",", Period: ".", Slash: "/",
+  };
+  return named[code] || null;
+}
+
+function startRecording(action) {
+  recording = action;
+  recordHint = "";
+  api("app.hotkeysPause", { on: true }).catch(() => {});
+  render();
+  document.querySelector(".hotkey.rec .keys")?.focus();
+}
+
+function stopRecording() {
+  if (!recording) return;
+  recording = null;
+  recordHint = "";
+  api("app.hotkeysPause", { on: false }).catch(() => {});
+  render();
+}
+
+function saveHotkey(action, keys) {
+  const name = t(action === "notes" ? "叫出便籤" : "顯示／隱藏全部組件");
+  api("app.hotkey", { action, keys })
+    .then(() => toast(keys ? t("「{name}」改成 {keys}", { name, keys }) : t("已關閉「{name}」", { name })))
+    .catch(() => {})
+    .finally(stopRecording);
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!recording) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  if (e.repeat || ["Control", "Alt", "Shift", "Meta", "AltGraph"].includes(e.key)) return;
+  const mods = [e.ctrlKey && "Ctrl", e.altKey && "Alt", e.shiftKey && "Shift", e.metaKey && "Win"].filter(Boolean);
+  if (!mods.length && e.key === "Escape") return stopRecording();
+  if (!mods.length && (e.key === "Backspace" || e.key === "Delete")) return saveHotkey(recording, "");
+  const key = keyName(e.code);
+  if (!key) { recordHint = t("這個鍵不能用，換一個吧"); return render(); }
+  if (!mods.length && !/^F\d+$/.test(key)) { recordHint = t("要加上 Ctrl、Alt、Shift 或 Win"); return render(); }
+  saveHotkey(recording, [...mods, key].join("+"));
+}, true);
+
+// clicking anywhere else, or leaving the window, cancels
+document.addEventListener("mousedown", (e) => { if (recording && !e.target.closest(".hotkey.rec")) stopRecording(); }, true);
+window.addEventListener("blur", stopRecording);
 
 // ───────────────────────── rendering ─────────────────────────
 
@@ -942,6 +1025,8 @@ function onAction(a) {
     }
     case "theme": api("theme.global", { id: a.dataset.id }); break;
     case "resetTheme": api("theme.reset"); break;
+    case "hotkeyRecord": recording === a.dataset.hk ? stopRecording() : startRecording(a.dataset.hk); break;
+    case "hotkeyClear": saveHotkey(a.dataset.hk, ""); break;
     case "lockAll": api("app.lockAll", { on: a.dataset.on === "true" }).then(() => toast(a.dataset.on === "true" ? t("已鎖定全部組件") : t("已解鎖全部組件"))); break;
     case "openFolder": api("app.openFolder", { which: a.dataset.which }); break;
     case "rescan": api("app.rescan").then(() => toast(t("已重新掃描組件目錄"))); break;
