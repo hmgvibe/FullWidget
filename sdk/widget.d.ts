@@ -341,6 +341,9 @@ declare namespace FullWidget {
       seek(ms: number): Promise<boolean>;
       /** The position now, in ms (it moves on while playing). */
       position(state: MediaState): number;
+      /** Timed lyrics of the current track, looked up on NetEase Cloud Music, QQ Music and Kugou
+       *  (the playing app first). `title`/`artist` say which track they are for. */
+      lyrics(): Promise<{ title: string; artist: string; lyrics: { found: boolean; source?: "netease" | "qqmusic" | "kugou"; lines?: { t: number; text: string; tr?: string }[] } }>;
     };
 
     /**

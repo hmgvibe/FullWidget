@@ -42,6 +42,8 @@ function render() {
     : t({ "zh-TW": "在音樂或影片程式裏播放，就會出現在這裏", "zh-CN": "在音乐或视频程序里播放，就会出现在这里", en: "Play something in a music or video app" });
   $("title").textContent = title;
   $("title").title = title;
+  // with lyrics on the artist's line, the artist goes after the title
+  $("title").dataset.by = live && lyr && lyr.lines.length ? s.artist || s.albumArtist || "" : "";
   $("artist").textContent = artist;
   $("artist").title = artist;
 
@@ -74,7 +76,111 @@ function render() {
 
   clearInterval(tick);
   if (live && s.playing && s.duration > 0 && opts.progress) tick = setInterval(renderPosition, 1000);
+  lyricsFor(live);
 }
+
+// ───────────────────────── lyrics ─────────────────────────
+
+let lyr = null;        // { key, lines: [{ t, text, tr }], source } for the track playing
+let lyrKey = "";       // the track lyrics were last asked for
+let lyrIndex = -2;     // the line shown
+let lyrTimer = 0;
+const LEAD = 150;      // a line shows a moment early, which reads as on time
+const SOURCES = { netease: { "zh-TW": "網易雲音樂", "zh-CN": "网易云音乐", en: "NetEase Cloud Music" }, qqmusic: { "zh-TW": "QQ 音樂", "zh-CN": "QQ 音乐", en: "QQ Music" }, kugou: { "zh-TW": "酷狗音樂", "zh-CN": "酷狗音乐", en: "Kugou" } };
+const trackKey = () => `${s.title}\n${s.artist}`;
+
+/** Some players never report where in the song they are; then time is counted from when the
+ *  track started, held while paused. */
+let own = { key: "", elapsed: 0, since: 0 };
+function trackTime() {
+  if (s.duration > 0) return widget.media.position(s);
+  return own.elapsed + (own.since ? Date.now() - own.since : 0);
+}
+function followOwnClock() {
+  const key = trackKey();
+  if (own.key !== key) own = { key, elapsed: 0, since: s.playing ? Date.now() : 0 };
+  else if (s.playing && !own.since) own.since = Date.now();
+  else if (!s.playing && own.since) { own.elapsed += Date.now() - own.since; own.since = 0; }
+}
+
+function lyricsFor(live) {
+  followOwnClock();
+  const want = live && opts.lyrics !== false && !!s.title;
+  const key = want ? trackKey() : "";
+  if (key !== lyrKey) {
+    lyrKey = key;
+    showLyrics(null);
+    if (key) fetchLyrics(key, 0);
+  }
+  scheduleLyrics();
+}
+
+function fetchLyrics(key, attempt) {
+  widget.media.lyrics().then((r) => {
+    if (key !== lyrKey) return; // the song changed meanwhile
+    // Windows may not have told the app about the new song yet: ask again in a moment
+    if (r.title !== s.title) { if (attempt < 3) setTimeout(() => key === lyrKey && fetchLyrics(key, attempt + 1), 800); return; }
+    if (r.lyrics && r.lyrics.found) showLyrics({ key, lines: r.lyrics.lines, source: r.lyrics.source });
+  }).catch((e) => widget.log(`media: lyrics: ${e.message}`));
+}
+
+function showLyrics(next) {
+  lyr = next;
+  lyrIndex = -2;
+  const has = !!(lyr && lyr.lines.length);
+  document.body.classList.toggle("lyrics", has);
+  $("lyr").innerHTML = has ? lyr.lines.map((l) =>
+    `<p><span class="l">${esc(l.text) || "♪"}</span>${l.tr ? `<span class="tr">${esc(l.tr)}</span>` : ""}</p>`).join("") : "";
+  $("lyric").title = has ? t({ "zh-TW": "歌詞來自", "zh-CN": "歌词来自", en: "Lyrics from" }) + " " + t(SOURCES[lyr.source] || { en: lyr.source }) : "";
+  $("title").dataset.by = has ? s.artist || s.albumArtist || "" : "";
+  placeLyrics(true);
+  scheduleLyrics();
+}
+
+/** The line playing now: the last one that has started. */
+function currentLine() {
+  const now = trackTime() + LEAD;
+  const L = lyr.lines;
+  let i = -1;
+  for (let lo = 0, hi = L.length - 1; lo <= hi;) {
+    const mid = (lo + hi) >> 1;
+    if (L[mid].t <= now) { i = mid; lo = mid + 1; } else hi = mid - 1;
+  }
+  return i;
+}
+
+function scheduleLyrics() {
+  clearTimeout(lyrTimer);
+  if (!lyr || document.hidden) return;
+  const i = currentLine();
+  if (i !== lyrIndex) { lyrIndex = i; placeLyrics(false); }
+  if (!s.playing) return;
+  // wake up when the next line is due
+  const next = lyr.lines[i + 1];
+  const wait = next ? next.t - (trackTime() + LEAD) : 1000;
+  lyrTimer = setTimeout(scheduleLyrics, Math.max(40, Math.min(wait + 5, 1000)));
+}
+
+/** Slides the list so the line playing sits in the middle (or on top, when there's room for one). */
+function placeLyrics(jump) {
+  if (!lyr) return;
+  const box = $("lyric"), list = $("lyr");
+  const rows = list.children;
+  for (let k = 0; k < rows.length; k++) {
+    rows[k].classList.toggle("on", k === lyrIndex);
+    rows[k].classList.toggle("past", k < lyrIndex);
+  }
+  const row = rows[Math.max(0, lyrIndex)];
+  if (!row) return;
+  const h = box.clientHeight, many = h > row.offsetHeight * 2.4;
+  const y = many ? h / 2 - (row.offsetTop + row.offsetHeight / 2) : -row.offsetTop;
+  list.classList.toggle("jump", jump);
+  list.style.transform = `translateY(${Math.round(y)}px)`;
+  box.classList.toggle("many", many);
+}
+new ResizeObserver(() => placeLyrics(true)).observe(document.body);
+
+const esc = (x) => String(x ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 function renderPosition() {
   if (!s.available || !(s.duration > 0)) { $("times").textContent = ""; return; }
@@ -120,6 +226,7 @@ $("progress").addEventListener("click", (e) => {
   const ms = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * s.duration;
   s = { ...s, position: ms, updated: Date.now() };
   renderPosition();
+  scheduleLyrics();
   act(() => widget.media.seek(ms));
 });
 document.addEventListener("keydown", (e) => {
@@ -129,7 +236,14 @@ document.addEventListener("keydown", (e) => {
 });
 
 widget.media.onChange((state) => { s = state || { available: false }; render(); });
-widget.settings.onChange((o) => { opts = o; render(); });
+widget.settings.onChange((o) => {
+  const translation = o.translation !== opts.translation;
+  opts = o;
+  document.body.classList.toggle("no-tr", opts.translation === false);
+  render();
+  if (translation) placeLyrics(true);
+});
+document.body.classList.toggle("no-tr", opts.translation === false);
 // no ticking while the widget is hidden
-document.addEventListener("visibilitychange", () => { if (document.hidden) clearInterval(tick); else render(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) { clearInterval(tick); clearTimeout(lyrTimer); } else render(); });
 render();

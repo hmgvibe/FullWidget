@@ -449,6 +449,8 @@
       previous: () => call("media.control", { action: "previous" }),
       seek: (ms) => call("media.control", { action: "seek", position: Math.max(0, Number(ms) || 0) }),
       position: mediaPosition,
+      /** Timed lyrics of the current track, looked up online: { title, artist, lyrics: { found, source, lines: [{ t, text, tr }] } }. */
+      lyrics: () => call("media.lyrics"),
     }),
 
     /** Pictures in the folder the user chose in a setting of type "folder". */

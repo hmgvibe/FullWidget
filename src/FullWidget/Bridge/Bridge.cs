@@ -87,6 +87,7 @@ sealed class WidgetBridge(App app)
             case "media.get": Require(w, "media"); return await app.Media.GetAsync();
             case "media.subscribe": Require(w, "media"); return await app.Media.SubscribeAsync(w);
             case "media.unsubscribe": app.Media.Unsubscribe(w); return null;
+            case "media.lyrics": Require(w, "media"); return await app.Media.LyricsAsync();
             case "media.control":
                 Require(w, "media");
                 return await app.Media.ControlAsync(Req(p, "action"), Num(p, "position"));

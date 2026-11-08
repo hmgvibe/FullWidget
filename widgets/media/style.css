@@ -67,6 +67,34 @@ body.none .controls .play { background: var(--w-track); color: var(--w-fg); }
   .controls { margin: 0; gap: 0.6rem; }
 }
 
+/* ── lyrics ── */
+/* the lyric takes the artist's line; the artist moves after the title */
+.title[data-by]:not([data-by=""])::after { content: "  ·  " attr(data-by); font-family: var(--w-font); font-size: 0.8em; font-weight: 400; letter-spacing: 0; color: var(--w-fg-muted); }
+.lyric { display: none; position: relative; overflow: hidden; height: 1.45em; font-size: 0.86rem; line-height: 1.45; }
+body.lyrics .lyric { display: block; }
+body.lyrics .artist { display: none; }
+.lyr { will-change: transform; transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+.lyr.jump { transition: none; }
+.lyr p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--w-fg-muted); opacity: 0.45; transition: opacity 0.45s, color 0.45s; }
+.lyr p.on { color: var(--w-accent); opacity: 1; font-weight: 600; }
+.lyr .tr { display: none; }
+
+/* room for more: the lyrics fill it, the line playing in the middle, with translations */
+@container (min-height: 150px) {
+  body.lyrics .main { justify-content: flex-start; padding-top: 0.15rem; }
+  body.lyrics .lyric { flex: 1; height: auto; min-height: 2.9em; margin: 0.45rem 0 0.2rem; font-size: 0.92rem; }
+  body.lyrics .lyric { mask-image: linear-gradient(#000 55%, transparent); }
+  body.lyrics .lyric.many { mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent); }
+  .lyr p { white-space: normal; padding: 0.2em 0; overflow: visible; }
+  .lyr .tr { display: block; font-size: 0.84em; font-weight: 400; line-height: 1.35; opacity: 0.85; }
+  body.no-tr .lyr .tr { display: none; }
+}
+/* cover on top: it gives up some height to the words */
+@container (min-height: 190px) and (max-aspect-ratio: 1.15) {
+  body.lyrics .art { width: min(56cqw, 34cqh); }
+  body.lyrics .main { flex: 1; min-height: 0; }
+}
+
 /* ── 玻璃上的字: the cover as a photo on the wallpaper, a hairline for the time ── */
 html[data-theme="type"] .art { border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); background: rgba(255, 255, 255, 0.14); }
 html[data-theme="type"] .art .ph { stroke: rgba(255, 255, 255, 0.6); }
@@ -81,6 +109,8 @@ html[data-theme="type"] .controls svg { filter: drop-shadow(0 1px 2px rgba(0, 0,
 html[data-theme="type"] .controls .play { background: transparent; color: var(--w-fg); }
 html[data-theme="type"] .controls .play svg { width: 22px; height: 22px; }
 html[data-theme="type"] .times { color: var(--w-fg); opacity: 0.8; }
+html[data-theme="type"] .lyr p { color: var(--w-fg); opacity: 0.5; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+html[data-theme="type"] .lyr p.on { opacity: 1; }
 
 /* ── 書桌上的紙: a snapshot pasted on the card, an ink rule for the time ── */
 html[data-theme="paper"] .art { border-radius: 1px; background: #fbf8f1; box-shadow: 0 1px 2px rgba(60, 40, 10, 0.25), 0 4px 10px rgba(60, 40, 10, 0.14); transform: rotate(-2deg); }
@@ -97,3 +127,5 @@ html[data-theme="paper"] .controls .play { border-radius: 3px; background: trans
 html[data-theme="paper"] .controls .play:hover:not(:disabled) { background: var(--w-hover); filter: none; }
 html[data-theme="paper"] body.none .controls .play { background: transparent; }
 html[data-theme="paper"] .times { font-family: var(--w-font-num); }
+html[data-theme="paper"] .lyr p { font-family: var(--w-font-title); }
+html[data-theme="paper"] .lyr p.on { color: var(--w-fg); }

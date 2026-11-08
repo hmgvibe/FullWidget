@@ -355,6 +355,9 @@ widget.media.onChange((m) => {
 const now = widget.media.position(m);   // where playback is now (it moves on while playing)
 await widget.media.toggle();            // play / pause; also play(), pause(), next(), previous()
 await widget.media.seek(60000);         // jump to 1:00
+// timed lyrics of the current song, looked up on NetEase Cloud Music, QQ Music and Kugou
+const { title, lyrics } = await widget.media.lyrics();
+if (lyrics.found) lyrics.lines;         // [{ t: ms, text, tr?: translation }], in order
 ```
 
 Windows reports every change at once (a new track, pause, another app starting to play), so there is nothing to poll.

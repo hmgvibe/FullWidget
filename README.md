@@ -34,7 +34,8 @@ Desktop widgets for Windows — [English below](#english).
 除非你自己要求，或是你放上桌面的組件需要，FullWidget 不會把任何資料傳到網路上。沒有統計、沒有追蹤、沒有帳號。會連網的只有：
 
 - **天氣、一週天氣、空氣品質、日出日落**：[Open-Meteo](https://open-meteo.com/)（天氣和地名）；沒設定城市時，用 [GeoJS](https://www.geojs.io/) 從 IP 位址估計所在城市。第一次啟動時桌面上就有天氣組件，所以會連一次。
-- **匯率**：[ExchangeRate-API](https://www.exchangerate-api.com/)。
+- **匯率**：[ExchangeRate-API](https://www.exchangerate-api.com/)；選了中國銀行時是[中國銀行外匯牌價](https://www.boc.cn/sourcedb/whpj/)。
+- **媒體控制的歌詞**：用正在播放的歌名、歌手和長度，在網易雲音樂、QQ 音樂、酷狗的歌詞服務上查找；可以在組件設定裏關掉。
 - **每日圖片**：Bing。**歷史上的今天**：維基百科。**新聞訂閱**：你填的 RSS 網址。
 - **組件市場**：打開控制中心「添加組件 → 線上」時，讀取 `hmgvibe.github.io/fullwidget-market` 的清單。
 - **第三方組件**：只能連到它安裝時列出、你同意過的網站。
@@ -71,7 +72,8 @@ The installer and the `full` zip need nothing else; the smaller zip also needs t
 This program will not transfer any information to other networked systems unless specifically requested by the user or needed by a widget the user put on the desktop. There is no telemetry, tracking or account. Only these connect to the internet:
 
 - **Weather, forecast, air quality, sun & moon:** [Open-Meteo](https://open-meteo.com/) (weather and place names); without a city set, [GeoJS](https://www.geojs.io/) guesses the city from your IP address. The weather widget is on the desktop at first start, so this happens once right away.
-- **Exchange rates:** [ExchangeRate-API](https://www.exchangerate-api.com/). **Picture of the day:** Bing. **On this day:** Wikipedia. **News feed:** the RSS address you enter.
+- **Exchange rates:** [ExchangeRate-API](https://www.exchangerate-api.com/), or [Bank of China](https://www.boc.cn/sourcedb/whpj/) when chosen. **Picture of the day:** Bing. **On this day:** Wikipedia. **News feed:** the RSS address you enter.
+- **Lyrics in Now playing:** the title, artist and length of the song playing are looked up on the lyric services of NetEase Cloud Music, QQ Music and Kugou; this can be turned off in the widget's settings.
 - **Widget market:** the list at `hmgvibe.github.io/fullwidget-market`, when you open Add widgets → Online.
 - **Third-party widgets:** only the sites listed when they were installed, which you agreed to.
 

@@ -104,6 +104,16 @@ sealed class MediaSession : IDisposable
         finally { Release(s); }
     }
 
+    /// Timed lyrics for the current track (see Lyrics); the title and artist say which track they
+    /// belong to, since the song may change while they are being looked up.
+    public async Task<object> LyricsAsync()
+    {
+        if (!available || title.Length == 0) return new { found = false, title, artist };
+        string t = title, a = artist.Length > 0 ? artist : albumArtist;
+        var r = await Lyrics.FindAsync(appId, t, a, album, Math.Max(0, (end - start) / 10_000));
+        return new { title = t, artist, lyrics = r };
+    }
+
     /// The album art of the current track, served to widgets at /__media/cover/&lt;key&gt;.
     public (byte[] bytes, string mime)? Cover(string key) =>
         cover.bytes != null && cover.key == key ? (cover.bytes, cover.mime) : null;

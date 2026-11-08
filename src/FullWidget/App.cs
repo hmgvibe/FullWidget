@@ -909,6 +909,17 @@ sealed class App : ApplicationContext
                 case "dump-state": // for UI development: the control center's state as JSON
                     File.WriteAllText(Arg(1), System.Text.Json.JsonSerializer.Serialize(new ControlBridge(this).State(), Json.Web));
                     break;
+                case "lyrics": // for testing: "lyrics <out.json> <app>|<title>|<artist>|<ms>" looks a song up
+                {
+                    var q = string.Join(' ', a.Skip(2)).Split('|');
+                    string outFile = Arg(1);
+                    _ = Task.Run(async () =>
+                    {
+                        var r = await Providers.Lyrics.FindAsync(q[0], q[1], q.Length > 2 ? q[2] : "", "", q.Length > 3 ? long.Parse(q[3]) : 0);
+                        File.WriteAllText(outFile, System.Text.Json.JsonSerializer.Serialize(r, Json.Web));
+                    });
+                    break;
+                }
                 case "rescan": RescanWidgets(); break;
                 case "reload": Target().Reload(); break;
                 case "lock": SetLocked(Target(), Arg(2) == "on"); break;
