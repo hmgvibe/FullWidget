@@ -34,7 +34,7 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
             themeOverrides = cfg.Theme,
             globalLook = Appearance.Effective(cfg, null),
             themes = Themes.All.Select(t => new { id = t.Id, name = t.DisplayName, description = Text.Pick(t.Description) }),
-            catalog = Sorted(app.Catalog.All).Select(m => new
+            catalog = Each(Sorted(app.Catalog.All), m => m.Id, m => new
             {
                 id = m.Id,
                 name = m.DisplayName,
@@ -53,7 +53,7 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
                 count = cfg.Instances.Count(i => i.Widget == m.Id),
             }),
             problems = app.Catalog.Problems.Select(x => new { folder = x.Folder, message = x.Message }),
-            instances = cfg.Instances.Select(i =>
+            instances = Each(cfg.Instances, i => i.Id, i =>
             {
                 var m = app.Catalog.Find(i.Widget);
                 var w = app.WindowOf(i.Id);
@@ -83,6 +83,25 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
                 };
             }),
         };
+    }
+
+    /// Maps each item and checks right away that it can be sent, so one broken widget (an odd
+    /// manifest, a setting that can't be written as JSON) is left out and logged, rather than
+    /// the whole state failing and the control center staying blank.
+    static List<object> Each<T>(IEnumerable<T> items, Func<T, string> name, Func<T, object> map)
+    {
+        var list = new List<object>();
+        foreach (var x in items)
+        {
+            try
+            {
+                var o = map(x);
+                JsonSerializer.SerializeToUtf8Bytes(o, Json.Web);
+                list.Add(o);
+            }
+            catch (Exception ex) { Log.Error($"Control center: left out {name(x)}", ex); }
+        }
+        return list;
     }
 
     /// Built-ins in the order people look for them; everything else after, by id.

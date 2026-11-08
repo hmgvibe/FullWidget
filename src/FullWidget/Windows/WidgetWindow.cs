@@ -58,7 +58,7 @@ sealed class WidgetWindow : NativeWindow
     {
         var look = Appearance.Effective(app.Config.Data, Cfg);
         marginDip = Appearance.MarginDip(look);
-        dpi = DpiAt(Cfg.X, Cfg.Y);
+        dpi = DpiAt(CardX, CardY);
         var r = OuterRect();
 
         CreateHandle(new CreateParams
@@ -135,18 +135,31 @@ sealed class WidgetWindow : NativeWindow
 
     // ───────────────────────── geometry ─────────────────────────
 
+    /// Where the card shows while the monitor it belongs on is missing. Its saved place (Cfg.X/Y)
+    /// is kept, so it goes back there when that monitor returns. Null when it is at home.
+    public Point? Away { get; private set; }
+    int CardX => Away?.X ?? Cfg.X;
+    int CardY => Away?.Y ?? Cfg.Y;
+
+    /// Shows the card at a stand-in spot (or back at its saved place, with null) without saving.
+    public void ShowAt(Point? away)
+    {
+        Away = away;
+        if (Handle != IntPtr.Zero) ApplyOuterRect();
+    }
+
     /// Window rectangle in physical pixels: the card plus the shadow margin around it.
     Rectangle OuterRect()
     {
         int m = MarginPx;
-        return new Rectangle(Cfg.X - m, Cfg.Y - m,
+        return new Rectangle(CardX - m, CardY - m,
             (int)Math.Round(Cfg.Width * Scale) + 2 * m,
             (int)Math.Round(Cfg.Height * Scale) + 2 * m);
     }
 
     /// The visible card in physical pixels.
     public Rectangle CardRect() =>
-        new(Cfg.X, Cfg.Y, (int)Math.Round(Cfg.Width * Scale), (int)Math.Round(Cfg.Height * Scale));
+        new(CardX, CardY, (int)Math.Round(Cfg.Width * Scale), (int)Math.Round(Cfg.Height * Scale));
 
     void ApplyOuterRect()
     {
@@ -158,6 +171,7 @@ sealed class WidgetWindow : NativeWindow
     {
         if (!GetWindowRect(Handle, out var r)) return;
         int m = MarginPx;
+        Away = null; // placed by hand: this is its home now
         Cfg.X = r.Left + m;
         Cfg.Y = r.Top + m;
         Cfg.Width = Math.Round((r.Right - r.Left - 2 * m) / Scale, 1);
@@ -224,6 +238,7 @@ sealed class WidgetWindow : NativeWindow
 
     public void MoveCardTo(int x, int y)
     {
+        Away = null;
         Cfg.X = x;
         Cfg.Y = y;
         ApplyOuterRect();

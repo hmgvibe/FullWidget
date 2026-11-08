@@ -31,7 +31,8 @@ sealed class SystemMonitor : IDisposable
     long coreAt = long.MinValue;
 
     ulong lastIdle, lastTotal;
-    long lastNetIn, lastNetOut, lastNetTick;
+    Dictionary<string, (long rx, long tx)> lastNet = new();
+    long lastNetTick;
     object? disks;
     long disksNext;
 
@@ -131,28 +132,36 @@ sealed class SystemMonitor : IDisposable
         }, usage);
     }
 
+    /// Download and upload speed of the real adapters. Each adapter is measured on its own: one
+    /// that just appeared (Wi-Fi joining, a VPN connecting) only counts from its second reading,
+    /// so its bytes-since-boot never show up as one second's traffic.
     (object info, double down, double up) SampleNetwork()
     {
-        long rx = 0, tx = 0;
+        long dRx = 0, dTx = 0, rx = 0, tx = 0;
+        var seen = new Dictionary<string, (long rx, long tx)>();
         try
         {
             foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (n.OperationalStatus != OperationalStatus.Up) continue;
-                if (n.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel) continue;
+                if (n.OperationalStatus != OperationalStatus.Up || SystemInfo.IsVirtual(n)) continue;
                 var s = n.GetIPStatistics();
+                seen[n.Id] = (s.BytesReceived, s.BytesSent);
                 rx += s.BytesReceived;
                 tx += s.BytesSent;
+                if (lastNet.TryGetValue(n.Id, out var was))
+                {
+                    dRx += Math.Max(0, s.BytesReceived - was.rx); // counters can reset
+                    dTx += Math.Max(0, s.BytesSent - was.tx);
+                }
             }
         }
         catch { /* adapters can vanish mid-enumeration */ }
 
         long now = Environment.TickCount64;
         double secs = (now - lastNetTick) / 1000.0;
-        double down = lastNetTick == 0 || secs <= 0 ? 0 : Math.Max(0, (rx - lastNetIn) / secs);
-        double up = lastNetTick == 0 || secs <= 0 ? 0 : Math.Max(0, (tx - lastNetOut) / secs);
-        lastNetIn = rx; lastNetOut = tx; lastNetTick = now;
-        down = Math.Round(down); up = Math.Round(up);
+        bool first = lastNetTick == 0 || secs <= 0;
+        double down = first ? 0 : Math.Round(dRx / secs), up = first ? 0 : Math.Round(dTx / secs);
+        lastNet = seen; lastNetTick = now;
         return (new { down, up, totalDown = rx, totalUp = tx }, down, up);
     }
 

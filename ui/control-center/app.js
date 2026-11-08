@@ -35,6 +35,7 @@ function api(m, p) {
   return call(m, p).catch((e) => { toast(t("沒有成功：{msg}", { msg: e.message })); throw e; });
 }
 
+let loadTimer = 0;
 if (host) {
   host.addEventListener("message", (e) => {
     const msg = e.data || {};
@@ -44,9 +45,12 @@ if (host) {
       pending.delete(msg.id);
       msg.e !== undefined ? p.reject(new Error(msg.e)) : p.resolve(msg.r);
     } else if (msg.ev === "state") {
+      clearTimeout(loadTimer);
       S = msg.d;
       LANG = S.lang || "zh-TW";
-      render();
+      try { render(); } catch (err) { console.error(err); loadFailed(); }
+    } else if (msg.ev === "stateError") {
+      if (S) toast(t("沒有成功：{msg}", { msg: msg.d })); else loadFailed();
     } else if (msg.ev === "select") {
       flushEdits();
       disarm();
@@ -70,6 +74,25 @@ if (host) {
     }
   });
   host.postMessage({ m: "ready" });
+  loadTimer = setTimeout(loadFailed, 6000);
+}
+
+/** The host couldn't send what the page shows, or it never came: say so, with a way to try
+    again, rather than leave the page blank. */
+function loadFailed() {
+  if (!S && navigator.language.toLowerCase().startsWith("zh-cn")) LANG = "zh-CN";
+  else if (!S && !navigator.language.toLowerCase().startsWith("zh")) LANG = "en";
+  const main = document.getElementById("main");
+  main.innerHTML = `<div class="empty"><h3>${t("控制中心沒有載入成功")}</h3>
+    <div>${t("可以再試一次。如果一直這樣，請在問題回報附上資料夾 local › logs 裡的 app.log。")}</div>
+    <div class="row-btns"><button class="btn primary" id="load-retry">${t("再試一次")}</button>
+    <button class="btn" id="load-folder">${t("打開資料夾")}</button></div></div>`;
+  document.getElementById("load-retry").onclick = () => {
+    main.innerHTML = "";
+    loadTimer = setTimeout(loadFailed, 6000);
+    host.postMessage({ m: "ready" });
+  };
+  document.getElementById("load-folder").onclick = () => host.postMessage({ m: "app.openFolder", p: { which: "data" } });
 }
 
 // ───────────────────────── words ─────────────────────────

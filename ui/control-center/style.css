@@ -242,6 +242,7 @@ input[type="date"].field::-webkit-calendar-picker-indicator { filter: invert(1);
 @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } }
 
 .empty { flex: 1; display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; color: var(--muted); }
+.empty .row-btns { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
 .empty h3 { margin: 0; font-size: 16px; color: var(--fg); font-weight: 600; }
 
 /* ── gallery ── */

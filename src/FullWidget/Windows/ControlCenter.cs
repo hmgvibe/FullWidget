@@ -143,13 +143,24 @@ sealed class ControlCenter : Form
         pushTimer.Start();
     }
 
-    void Push() => Send("state", bridge.State());
-
-    void Send(string ev, object? data)
+    void Push()
     {
-        if (IsDisposed || web.CoreWebView2 == null) return;
-        try { web.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new { ev, d = data }, Json.Web)); }
-        catch (Exception ex) { Log.Warn($"Control center send {ev} failed: {ex.Message}"); }
+        object state;
+        try { state = bridge.State(); }
+        catch (Exception ex)
+        {
+            Log.Error("Control center: building the state failed", ex);
+            Send("stateError", ex.Message);
+            return;
+        }
+        if (!Send("state", state)) Send("stateError", "state");
+    }
+
+    bool Send(string ev, object? data)
+    {
+        if (IsDisposed || web.CoreWebView2 == null) return false;
+        try { web.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new { ev, d = data }, Json.Web)); return true; }
+        catch (Exception ex) { Log.Error($"Control center: sending {ev} failed", ex); return false; }
     }
 
     async void OnMessage(object? sender, CoreWebView2WebMessageReceivedEventArgs e)

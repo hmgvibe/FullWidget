@@ -16,6 +16,10 @@ const PHRASES = [
   [".fwz 組件檔案", ".fwz 组件文件", ".fwz widget file"],
   ["沒有成功：{msg}", "没有成功：{msg}", "That didn't work: {msg}"],
   ["、", "、", ", "],
+  ["控制中心沒有載入成功", "控制中心没有加载成功", "The control center didn't load"],
+  ["可以再試一次。如果一直這樣，請在問題回報附上資料夾 local › logs 裡的 app.log。", "可以再试一次。如果一直这样，请在问题反馈中附上文件夹 local › logs 里的 app.log。", "Try again. If it keeps happening, please attach app.log from the local › logs folder to your report."],
+  ["再試一次", "再试一次", "Try again"],
+  ["打開資料夾", "打开文件夹", "Open folder"],
 
   // ── layers ──
   ["置頂", "置顶", "Top"],

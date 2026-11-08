@@ -47,6 +47,7 @@ sealed class App : ApplicationContext
         Market = new Market(this);
         CommandChannel.Listen(pipeName, cmd => Post(() => Execute(cmd)));
         SystemEvents.DisplaySettingsChanged += OnDisplayChanged;
+        displaySettle.Tick += (_, _) => { displaySettle.Stop(); PlaceAll(); };
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         marginWatch.Tick += (_, _) => WatchMargins();
         marginWatch.Start();
@@ -58,6 +59,8 @@ sealed class App : ApplicationContext
     // The invisible shadow margin around a card must not swallow clicks meant for what's behind.
     // Checked only when the mouse has moved, which costs next to nothing.
     readonly System.Windows.Forms.Timer marginWatch = new() { Interval = 30 };
+    /// Places widgets again once monitors have settled after a change.
+    readonly System.Windows.Forms.Timer displaySettle = new() { Interval = 2000 };
     Point lastCursor = new(int.MinValue, int.MinValue);
 
     void WatchMargins()
@@ -205,9 +208,8 @@ sealed class App : ApplicationContext
         }
         if (inst.Width <= 0) inst.Width = m.Size.Width;
         if (inst.Height <= 0) inst.Height = m.Size.Height;
-        EnsureOnScreen(inst);
-
         var w = new WidgetWindow(this, inst, m);
+        w.ShowAt(StandIn(inst, null));
         w.Lost += OnWindowLost;
         windows[inst.Id] = w;
         w.Create();
@@ -741,8 +743,10 @@ sealed class App : ApplicationContext
         double scale = Win32.DpiAt(wa.X + 1, wa.Y + 1) / 96.0;
         int w = (int)(widthDip * scale), h = (int)(heightDip * scale);
         int gap = (int)(20 * scale), step = (int)(20 * scale);
+        // open widgets count where they show now (a stand-in spot, if their monitor is missing)
         var taken = Config.Data.Instances.Select(i =>
         {
+            if (windows.TryGetValue(i.Id, out var open)) return Rectangle.Inflate(open.CardRect(), gap, gap);
             double s = Win32.DpiAt(i.X, i.Y) / 96.0;
             return Rectangle.Inflate(new Rectangle(i.X, i.Y, (int)(i.Width * s), (int)(i.Height * s)), gap, gap);
         }).ToList();
@@ -756,32 +760,50 @@ sealed class App : ApplicationContext
         return new Point(wa.Left + (wa.Width - w) / 2, wa.Top + (wa.Height - h) / 2);
     }
 
-    /// Brings back widgets whose saved position is no longer visible (monitor unplugged etc.).
-    void EnsureOnScreen(InstanceConfig inst)
+    /// Whether a card at (x, y) of this size would be usefully visible on some monitor now.
+    static bool OnSomeScreen(int x, int y, double widthDip, double heightDip)
     {
-        double scale = Win32.DpiAt(inst.X, inst.Y) / 96.0;
-        var card = new Rectangle(inst.X, inst.Y, (int)(inst.Width * scale), (int)(inst.Height * scale));
-        bool visible = Screen.AllScreens.Any(s =>
+        double scale = Win32.DpiAt(x, y) / 96.0;
+        var card = new Rectangle(x, y, (int)(widthDip * scale), (int)(heightDip * scale));
+        return Screen.AllScreens.Any(s =>
         {
             var i = Rectangle.Intersect(s.WorkingArea, card);
             return i.Width >= 40 && i.Height >= 40;
         });
-        if (visible) return;
-        var spot = FindFreeSpot(inst.Width, inst.Height);
-        Log.Info($"Instance {inst.Id} was off-screen at ({inst.X},{inst.Y}); moved to ({spot.X},{spot.Y})");
-        inst.X = spot.X;
-        inst.Y = spot.Y;
     }
 
+    /// Where a widget should show when the monitor it was placed on is missing (turned off,
+    /// unplugged): null while its own place is visible. The saved place is never overwritten, so
+    /// the widget goes back once that monitor returns. A spot it already stands in is kept.
+    Point? StandIn(InstanceConfig inst, Point? current)
+    {
+        if (OnSomeScreen(inst.X, inst.Y, inst.Width, inst.Height)) return null;
+        if (current is { } c && OnSomeScreen(c.X, c.Y, inst.Width, inst.Height)) return c;
+        var spot = FindFreeSpot(inst.Width, inst.Height);
+        Log.Info($"Instance {inst.Id}: its monitor at ({inst.X},{inst.Y}) is missing; showing it at ({spot.X},{spot.Y}) for now");
+        return spot;
+    }
+
+    /// Monitors came or went. Windows also shuffles windows around by itself then, so every
+    /// widget is put back where it belongs. Monitors waking up can take a moment to settle, so
+    /// this runs again a little later.
     void OnDisplayChanged(object? sender, EventArgs e) => Post(() =>
+    {
+        PlaceAll();
+        displaySettle.Stop();
+        displaySettle.Start();
+    });
+
+    void PlaceAll()
     {
         foreach (var w in Windows.ToList())
         {
-            int x = w.Cfg.X, y = w.Cfg.Y;
-            EnsureOnScreen(w.Cfg);
-            if (x != w.Cfg.X || y != w.Cfg.Y) w.MoveCardTo(w.Cfg.X, w.Cfg.Y);
+            var was = w.Away;
+            var now = StandIn(w.Cfg, was);
+            if (was != null && now == null) Log.Info($"Instance {w.Cfg.Id}: back on its own monitor");
+            w.ShowAt(now);
         }
-    });
+    }
 
     void OnUserPreferenceChanged(object? sender, UserPreferenceChangedEventArgs e)
     {

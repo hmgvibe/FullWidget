@@ -124,7 +124,13 @@ static class SystemInfo
 
     // ── network ──
 
-    static readonly string[] VirtualHints = { "virtual", "hyper-v", "vmware", "virtualbox", "vpn", "tap-", "wireguard", "tailscale", "zerotier", "loopback", "bluetooth" };
+    static readonly string[] VirtualHints = { "virtual", "hyper-v", "vethernet", "vmware", "virtualbox", "vpn", "tap-", "wintun", "tunnel", "clash", "mihomo", "sing-box", "wireguard", "tailscale", "zerotier", "npcap", "loopback", "bluetooth" };
+
+    /// Virtual adapters (VMs, VPNs, proxy TUN adapters…) carry traffic that also crosses a real
+    /// adapter, so counting both would add the same bytes twice.
+    public static bool IsVirtual(NetworkInterface n) =>
+        n.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel ||
+        VirtualHints.Any(h => n.Description.Contains(h, StringComparison.OrdinalIgnoreCase) || n.Name.Contains(h, StringComparison.OrdinalIgnoreCase));
 
     /// Connected adapters, the one carrying internet traffic (has a gateway, not virtual) first.
     public static object Adapters()
@@ -137,7 +143,7 @@ static class SystemInfo
             IPInterfaceProperties p;
             try { p = n.GetIPProperties(); } catch (NetworkInformationException) { continue; }
             string desc = n.Description;
-            bool isVirtual = VirtualHints.Any(h => desc.Contains(h, StringComparison.OrdinalIgnoreCase) || n.Name.Contains(h, StringComparison.OrdinalIgnoreCase));
+            bool isVirtual = IsVirtual(n);
             var gateways = p.GatewayAddresses.Select(g => g.Address).Where(a => !a.Equals(IPAddress.Any) && !a.Equals(IPAddress.IPv6Any))
                 .OrderBy(a => a.AddressFamily == AddressFamily.InterNetwork ? 0 : 1) // the familiar 192.168.x.x first
                 .Select(a => a.ToString()).ToArray();
