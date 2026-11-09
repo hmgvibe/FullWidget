@@ -96,6 +96,8 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 
 [Run]
 Filename: "{app}\FullWidget.exe"; Description: "{cm:LaunchNow}"; Flags: nowait postinstall skipifsilent
+; an update started from inside FullWidget runs silently with /relaunch=1: open it again afterwards
+Filename: "{app}\FullWidget.exe"; Flags: nowait; Check: Relaunch
 
 [UninstallRun]
 ; quit, then take this copy out of the startup list and the .fwz file type
@@ -106,6 +108,11 @@ Filename: "{app}\FullWidget.exe"; Parameters: "--cleanup"; Flags: runhidden wait
 Type: dirifempty; Name: "{app}"
 
 [Code]
+function Relaunch: Boolean;
+begin
+  Result := ExpandConstant('{param:relaunch|0}') = '1';
+end;
+
 // An upgrade over a running copy: ask it to quit first, so its files can be replaced.
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var

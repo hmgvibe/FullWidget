@@ -13,6 +13,7 @@ static class Program
     ///   --cmd="..."       send a command to the running instance (see App.Execute)
     ///   --exit            same as --cmd=exit
     ///   --wait-pid=N      wait for process N to exit first (used when restarting)
+    ///   --apply-update=DIR   (the new version, unpacked) replace the copy in DIR with this one, then start it
     ///   --cleanup         remove autostart and the .fwz file type, then quit (before deleting the app)
     ///   FILE.fwz          install a widget package
     [STAThread]
@@ -21,6 +22,7 @@ static class Program
         string? dataDir = null, command = null;
         bool cleanup = false;
         int? waitPid = null;
+        string? applyTo = null;
         foreach (var arg in args)
         {
             // A package path, e.g. from double-clicking a .fwz file.
@@ -37,6 +39,7 @@ static class Program
                 case "cmd": command = value.Length >= 2 && value[0] == '"' && value[^1] == '"' ? value[1..^1] : value; break;
                 case "exit": command = "exit"; break;
                 case "cleanup": cleanup = true; break;
+                case "apply-update": applyTo = value.Trim('"'); break;
                 case "wait-pid": waitPid = int.TryParse(value, out var p) ? p : null; break;
             }
         }
@@ -47,6 +50,7 @@ static class Program
         }
 
         Paths.Init(dataDir);
+        if (applyTo != null) return Updater.Apply(applyTo, dataDir);
         if (cleanup)
         {
             // Before deleting a portable copy: take FullWidget out of Windows' startup list and file types.

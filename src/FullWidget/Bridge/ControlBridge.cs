@@ -27,6 +27,7 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
             hideAll = cfg.HideAll,
             pauseFullscreen = cfg.PauseOnFullscreen,
             hotkeys = app.Keys?.Status(),
+            update = app.Updater.State(),
             portable = Paths.Portable,
             editMode = app.EditMode,
             dataDir = Paths.DataDir,
@@ -251,6 +252,11 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
             case "app.hideAll": app.SetHideAll(On()); break;
             case "app.pauseFullscreen": app.SetPauseOnFullscreen(On()); break;
             case "app.hotkey": app.SetShortcut(Req(p, "action"), Str(p, "keys") ?? ""); break;
+            case "app.updateCheck": return app.Updater.CheckAsync(manual: true).ContinueWith(_ => (object?)null);
+            case "app.updateInstall": _ = app.Updater.InstallAsync(); break;
+            case "app.updateCancel": app.Updater.Cancel(); break;
+            case "app.updateAuto": app.Updater.SetAuto(On()); break;
+            case "app.updatePage": app.Updater.OpenPage(); break;
             case "app.hotkeysPause": app.Keys?.Pause(On()); break;
             case "app.lockAll": app.SetAllLocked(On()); break;
             case "app.editMode": app.SetEditMode(On()); break;

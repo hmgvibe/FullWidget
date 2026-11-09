@@ -82,7 +82,7 @@ static class Menus
         var themes = Themes.All.Select(t => Check(t.DisplayName, cfg.ThemeId == t.Id, () => app.SetGlobalTheme(t.Id))).ToList();
         bool allLocked = windows.Count > 0 && windows.All(w => w.Cfg.Locked);
 
-        return new()
+        var list = new List<PopItem>
         {
             Header(Strings.AppName, Strings.TrayHeader(App.Version, windows.Count), Icons.App),
             Item(Strings.OpenControlCenter, () => app.OpenControlCenter()),
@@ -98,5 +98,8 @@ static class Menus
             Item(Strings.SettingsEllipsis, () => app.OpenControlCenter(page: "settings")),
             Item(Strings.Exit, app.ExitThread),
         };
+        // a new version: offered just under the header
+        if (app.Updater.Available is { } v) list.Insert(2, Item(Strings.UpdateTo(v), () => app.OpenControlCenter(page: "settings")));
+        return list;
     }
 }

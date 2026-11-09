@@ -588,9 +588,75 @@ function pageSettings() {
         ${row("組件目錄", "放自己寫的或下載的組件。", `<span class="path" title="${esc(S.widgetsDir)}">${esc(S.widgetsDir)}</span><button class="btn small" data-action="openFolder" data-which="widgets">${t("打開")}</button>`, { key: "wdir" })}
         ${row("資料位置", S.portable ? "便攜模式：資料存在程式資料夾裏。" : "設定與組件保存的內容。", `<span class="path" title="${esc(S.dataDir)}">${esc(S.dataDir)}</span><button class="btn small" data-action="openFolder" data-which="data">${t("打開")}</button>`, { key: "ddir" })}
         <div class="group-title">${t("關於")}</div>
-        ${row("版本", "", `<span class="num" style="color:var(--muted)">FullWidget ${esc(S.version)}</span>`, { key: "ver" })}
+        ${row("版本", updateNote(), updateCtl(), { key: "ver" })}
+        ${row("自動檢查更新", "每天看一兩次有沒有新版本，有的話在托盤提示。只連 GitHub，不會自己安裝。", control({ key: "updateAuto", type: "toggle", label: "自動檢查更新" }, S.update?.auto !== false, "app"), { key: "upd-auto" })}
       </div></section>
     </div>`;
+}
+
+// ───────────────────────── updates ─────────────────────────
+
+const UPDATE_ERRORS = {
+  offline: "連不上 GitHub，稍後再試。",
+  download: "下載中斷了，再試一次吧。",
+  verify: "下載的檔案和發佈的不一致，沒有安裝。再試一次吧。",
+  signature: "新版本的簽章不對，沒有安裝。",
+  noAsset: "這個版本沒有適合這份 FullWidget 的檔案。",
+  readonly: "FullWidget 所在的資料夾不能寫入，請到網站下載新版本。",
+  dev: "開發用的副本不會自己更新。",
+  failed: "沒有安裝成功，請到網站下載新版本。",
+};
+
+/** The line under "版本": where the update stands. */
+function updateNote() {
+  const u = S.update;
+  if (!u) return "";
+  switch (u.status) {
+    case "checking": return "正在檢查更新…";
+    case "latest": return t("已是最新版本") + (u.checkedAt ? t("（{time}檢查）", { time: ago(u.checkedAt) }) : "");
+    case "available": return t("v{v} 可以更新了。下載約 {size}，裝好後自動重新打開。", { v: u.latest, size: kb(u.size) });
+    case "downloading": return t("正在下載 v{v}…", { v: u.latest });
+    case "applying": return "正在安裝，FullWidget 會自動關閉再重新打開…";
+    case "error": return UPDATE_ERRORS[u.error] || UPDATE_ERRORS.failed;
+    default: return "";
+  }
+}
+
+function updateCtl() {
+  const u = S.update || { status: "idle", current: S.version };
+  const ver = `<span class="num upd-ver">FullWidget ${esc(S.version)}</span>`;
+  const blocked = u.blocked && (u.status === "available" || u.blocked !== "dev");
+  switch (u.status) {
+    case "checking":
+      return `${ver}<button class="btn small" disabled>${t("檢查中…")}</button>`;
+    case "available":
+      return blocked
+        ? `${ver}<button class="btn small primary" data-action="updatePage">${t("到網站下載")}</button>`
+        : `${ver}<button class="link" data-action="updatePage">${t("新版本說明")}</button><button class="btn small primary" data-action="updateInstall">${t("更新到 v{v}", { v: esc(u.latest) })}</button>`;
+    case "downloading": {
+      const pct = Math.round((u.progress || 0) * 100);
+      return `<div class="upd-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
+        <span class="num upd-pct">${pct}%</span><button class="btn small quiet" data-action="updateCancel">${t("取消")}</button>`;
+    }
+    case "applying":
+      return `${ver}<button class="btn small" disabled>${t("安裝中…")}</button>`;
+    case "error":
+      return u.error === "readonly" || u.error === "failed" || u.error === "noAsset" || u.error === "signature"
+        ? `${ver}<button class="btn small" data-action="updatePage">${t("到網站下載")}</button>`
+        : u.error === "dev" ? ver
+        : `${ver}<button class="btn small" data-action="${u.latest && u.latest !== S.version && u.error !== "offline" ? "updateInstall" : "updateCheck"}">${t("再試一次")}</button>`;
+    default:
+      return `${ver}<button class="btn small" data-action="updateCheck">${t("檢查更新")}</button>`;
+  }
+}
+
+/** "剛剛", "5 分鐘前", "3 小時前", or the date. */
+function ago(ms) {
+  const m = Math.round((Date.now() - ms) / 60000);
+  if (m < 1) return t("剛剛");
+  if (m < 60) return t("{n} 分鐘前", { n: m });
+  if (m < 1440) return t("{n} 小時前", { n: Math.round(m / 60) });
+  return new Date(ms).toLocaleDateString(LANG === "en" ? "en" : LANG === "zh-CN" ? "zh-CN" : "zh-TW");
 }
 
 // ───────────────────────── shortcuts ─────────────────────────
@@ -1031,6 +1097,10 @@ function onAction(a) {
     case "openFolder": api("app.openFolder", { which: a.dataset.which }); break;
     case "rescan": api("app.rescan").then(() => toast(t("已重新掃描組件目錄"))); break;
     case "restart": api("app.restart"); break;
+    case "updateCheck": api("app.updateCheck").catch(() => {}); break;
+    case "updateInstall": api("app.updateInstall").catch(() => {}); break;
+    case "updateCancel": api("app.updateCancel").catch(() => {}); break;
+    case "updatePage": api("app.updatePage").catch(() => {}); break;
   }
 }
 

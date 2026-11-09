@@ -25,6 +25,7 @@ sealed class App : ApplicationContext
     public AudioVolume Audio { get; }
     public MediaSession Media { get; }
     public Market Market { get; }
+    public Updater Updater { get; }
     public WidgetBridge Bridge { get; }
     public CoreWebView2Environment? Env { get; private set; }
     /// System-wide shortcuts; null until start-up has finished.
@@ -33,7 +34,10 @@ sealed class App : ApplicationContext
     readonly Dictionary<string, WidgetWindow> windows = new();
     readonly SynchronizationContext ui;
     readonly TrayIcon tray;
+    public TrayIcon Tray => tray;
     readonly string? dataDirArg;
+    /// The --data-dir this copy was started with, if any.
+    public string? DataDirArg => dataDirArg;
     bool exiting;
 
     public App(string pipeName, string? dataDirArg, string? startupCommand)
@@ -47,6 +51,7 @@ sealed class App : ApplicationContext
         Audio = new AudioVolume(this);
         Media = new MediaSession(this);
         Market = new Market(this);
+        Updater = new Updater(this);
         CommandChannel.Listen(pipeName, cmd => Post(() => Execute(cmd)));
         SystemEvents.DisplaySettingsChanged += OnDisplayChanged;
         displaySettle.Tick += (_, _) => { displaySettle.Stop(); PlaceAll(); };
@@ -184,6 +189,7 @@ sealed class App : ApplicationContext
             menu = new MenuPopup(this);
             await menu.InitAsync();
 
+            Updater.Start();
             if (!string.IsNullOrEmpty(startupCommand)) Execute(startupCommand);
         }
         catch (Exception ex)

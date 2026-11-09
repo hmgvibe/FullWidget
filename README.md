@@ -38,6 +38,7 @@ Desktop widgets for Windows — [English below](#english).
 - **媒體控制的歌詞**：用正在播放的歌名、歌手和長度，在網易雲音樂、QQ 音樂、酷狗的歌詞服務上查找；可以在組件設定裏關掉。
 - **每日圖片**：Bing。**歷史上的今天**：維基百科。**新聞訂閱**：你填的 RSS 網址。
 - **組件市場**：打開控制中心「添加組件 → 線上」時，讀取 `hmgvibe.github.io/fullwidget-market` 的清單。
+- **檢查更新**：啟動一分鐘後，以及之後每 12 小時，向 GitHub 查詢最新版本號（只送出目前的版本號，放在連線的 User-Agent 裏）。按「更新」才會下載新版本。可以在「設定 → 關於」關掉自動檢查。
 - **第三方組件**：只能連到它安裝時列出、你同意過的網站。
 
 這些服務只會收到查詢需要的內容（例如城市名稱），以及連線本身帶的 IP 位址。
@@ -75,6 +76,7 @@ This program will not transfer any information to other networked systems unless
 - **Exchange rates:** [ExchangeRate-API](https://www.exchangerate-api.com/), or [Bank of China](https://www.boc.cn/sourcedb/whpj/) when chosen. **Picture of the day:** Bing. **On this day:** Wikipedia. **News feed:** the RSS address you enter.
 - **Lyrics in Now playing:** the title, artist and length of the song playing are looked up on the lyric services of NetEase Cloud Music, QQ Music and Kugou; this can be turned off in the widget's settings.
 - **Widget market:** the list at `hmgvibe.github.io/fullwidget-market`, when you open Add widgets → Online.
+- **Update check:** a minute after start and every 12 hours after that, GitHub is asked for the latest version (only the current version number is sent, in the connection's User-Agent). The new version is downloaded only when you press Update. Automatic checks can be turned off under Settings → About.
 - **Third-party widgets:** only the sites listed when they were installed, which you agreed to.
 
 These services receive only what the request needs (such as a city name) and the IP address any connection carries.

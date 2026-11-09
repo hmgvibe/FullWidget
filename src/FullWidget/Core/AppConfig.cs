@@ -27,6 +27,10 @@ sealed class AppConfig
     public bool FileAssociation { get; set; } = true;
     /// The widget market's index.json; empty = the default (Core/Market.cs).
     public string? MarketUrl { get; set; }
+    /// Look for a new FullWidget now and then (Core/Updater.cs).
+    public bool UpdateCheck { get; set; } = true;
+    /// The newest version the user was told about, so each one is announced once.
+    public string? UpdateNotified { get; set; }
     /// System-wide shortcuts by action (Shell/Hotkeys.cs), e.g. "notes": "Ctrl+Alt+N"; "" = off.
     public Dictionary<string, string> Hotkeys { get; set; } = FullWidget.Shell.Hotkeys.Defaults();
     public List<InstanceConfig> Instances { get; set; } = new();
