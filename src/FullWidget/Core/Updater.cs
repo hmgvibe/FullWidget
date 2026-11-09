@@ -84,12 +84,12 @@ sealed class Updater
     {
         CleanUp();
         timer.Interval = (int)FirstCheck.TotalMilliseconds;
-        timer.Enabled = app.Config.Data.UpdateCheck;
+        timer.Enabled = app.Config.Data.AutoUpdateCheck;
     }
 
     public void SetAuto(bool on)
     {
-        app.Config.Data.UpdateCheck = on;
+        app.Config.Data.AutoUpdateCheck = on;
         app.Config.SaveSoon();
         if (on && !timer.Enabled) { timer.Interval = (int)FirstCheck.TotalMilliseconds; timer.Start(); }
         if (!on) timer.Stop();
@@ -105,7 +105,7 @@ sealed class Updater
         size = latest?.Size ?? 0,
         progress,
         checkedAt = checkedAt is { } c ? new DateTimeOffset(c).ToUnixTimeMilliseconds() : (long?)null,
-        auto = app.Config.Data.UpdateCheck,
+        auto = app.Config.Data.AutoUpdateCheck,
         kind = Kind,
         blocked = Blocked(),
     };

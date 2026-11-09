@@ -589,7 +589,7 @@ function pageSettings() {
         ${row("資料位置", S.portable ? "便攜模式：資料存在程式資料夾裏。" : "設定與組件保存的內容。", `<span class="path" title="${esc(S.dataDir)}">${esc(S.dataDir)}</span><button class="btn small" data-action="openFolder" data-which="data">${t("打開")}</button>`, { key: "ddir" })}
         <div class="group-title">${t("關於")}</div>
         ${row("版本", updateNote(), updateCtl(), { key: "ver" })}
-        ${row("自動檢查更新", "每天看一兩次有沒有新版本，有的話在托盤提示。只連 GitHub，不會自己安裝。", control({ key: "updateAuto", type: "toggle", label: "自動檢查更新" }, S.update?.auto !== false, "app"), { key: "upd-auto" })}
+        ${row("自動檢查更新", "每天看一兩次有沒有新版本，有的話在托盤提示。只連 GitHub，不會自己安裝。", control({ key: "updateAuto", type: "toggle", label: "自動檢查更新" }, S.update?.auto === true, "app"), { key: "upd-auto" })}
       </div></section>
     </div>`;
 }
