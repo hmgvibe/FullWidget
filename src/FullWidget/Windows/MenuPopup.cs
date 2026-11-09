@@ -8,7 +8,7 @@ using static FullWidget.Native.Win32;
 namespace FullWidget.Windows;
 
 /// The drawn popup menu (ui/menu) used for the tray and for widget right-clicks.
-/// One window is created at startup and reused, so a menu opens without delay.
+/// App makes it when a menu is first needed and keeps it while menus are in use (App.ShowMenu).
 ///
 /// Opening is a short handshake: the host sends the entries, the page lays them out and
 /// reports its size, then the host places the window next to the cursor and shows it.
@@ -26,6 +26,9 @@ sealed class MenuPopup : Form
     Point anchor;
     bool ready, upward, alignRight;
     int dpi = 96;
+
+    /// The menu went away (picked, dismissed or clicked outside).
+    public new event Action? Closed;
 
     public MenuPopup(App app)
     {
@@ -198,12 +201,16 @@ sealed class MenuPopup : Form
         if (down && !Bounds.Contains(Cursor.Position)) HideMenu();
     }
 
+    /// Closes the menu if it is open.
+    public void Dismiss() => HideMenu();
+
     void HideMenu()
     {
         outside.Stop();
         if (!Visible) return;
         Hide();
         Send("reset", null);
+        Closed?.Invoke();
     }
 
     void Send(string ev, object? d)

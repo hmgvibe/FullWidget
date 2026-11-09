@@ -13,6 +13,8 @@ sealed class TrayIcon : IDisposable
             if (e.Button == MouseButtons.Left) app.OpenControlCenter();
             else if (e.Button == MouseButtons.Right) app.ShowMenu(() => Menus.ForTray(app), Cursor.Position, fromTray: true);
         };
+        // the mouse on the icon: a menu may be wanted next, have it ready
+        icon.MouseMove += (_, _) => { if (app.Env != null) app.WarmMenu(); };
         icon.BalloonTipClicked += (_, _) => { var a = onBalloonClick; onBalloonClick = null; a?.Invoke(); };
         icon.BalloonTipClosed += (_, _) => onBalloonClick = null;
     }

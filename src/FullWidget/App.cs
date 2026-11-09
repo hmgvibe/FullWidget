@@ -26,6 +26,8 @@ sealed class App : ApplicationContext
     public MediaSession Media { get; }
     public Market Market { get; }
     public Updater Updater { get; }
+    /// Gives unused memory back to Windows after start and after big changes (Shell/MemoryTrim.cs).
+    public MemoryTrim Trim { get; }
     public WidgetBridge Bridge { get; }
     public CoreWebView2Environment? Env { get; private set; }
     /// System-wide shortcuts; null until start-up has finished.
@@ -52,6 +54,8 @@ sealed class App : ApplicationContext
         Media = new MediaSession(this);
         Market = new Market(this);
         Updater = new Updater(this);
+        Trim = new MemoryTrim(() => Env);
+        menuIdle.Tick += (_, _) => ReleaseMenu();
         CommandChannel.Listen(pipeName, cmd => Post(() => Execute(cmd)));
         SystemEvents.DisplaySettingsChanged += OnDisplayChanged;
         displaySettle.Tick += (_, _) => { displaySettle.Stop(); PlaceAll(); };
@@ -185,9 +189,7 @@ sealed class App : ApplicationContext
 
             if (Config.Data.DeveloperMode) StartHotReload();
 
-            // The menu window is made now and kept hidden, so menus open instantly.
-            menu = new MenuPopup(this);
-            await menu.InitAsync();
+            Trim.Soon();
 
             Updater.Start();
             if (!string.IsNullOrEmpty(startupCommand)) Execute(startupCommand);
@@ -224,6 +226,7 @@ sealed class App : ApplicationContext
         windows[inst.Id] = w;
         w.Create();
         if (fullscreen is { } f && f.Contains(Center(w.CardRect()))) w.SetPaused(true);
+        Trim.Soon();
         return w;
     }
 
@@ -302,6 +305,7 @@ sealed class App : ApplicationContext
         Config.Data.Instances.Remove(inst);
         Storage.DeleteInstance(inst.Id);
         Config.SaveSoon();
+        Trim.Soon();
         Log.Info($"Removed {inst.Id}");
     }
 
@@ -332,7 +336,7 @@ sealed class App : ApplicationContext
         if (controlCenter == null || controlCenter.IsDisposed)
         {
             controlCenter = new ControlCenter(this);
-            controlCenter.FormClosed += (_, _) => { controlCenter = null; SetEditMode(false); };
+            controlCenter.FormClosed += (_, _) => { controlCenter = null; SetEditMode(false); Trim.Soon(); };
             controlCenter.Show();
         }
         else
@@ -364,12 +368,46 @@ sealed class App : ApplicationContext
 
     // ───────────────────────── menus ─────────────────────────
 
+    // The menu's page is made when a menu is wanted (or the mouse rests on the tray icon), and
+    // let go after three idle minutes: kept around, it costs a renderer process (~18 MB) for
+    // something used now and then. Made fresh it opens in about 0.3 s instead of 0.04 s.
     MenuPopup? menu;
+    readonly System.Windows.Forms.Timer menuIdle = new() { Interval = 180_000 };
 
     public void ShowMenu(Func<List<PopItem>> build, Point at, bool fromTray)
     {
-        if (menu == null) { Log.Warn("Menu not ready yet"); return; }
-        menu.Open(build, at, fromTray);
+        if (Env == null) { Log.Warn("Menu not ready yet"); return; }
+        menuIdle.Stop();
+        WarmMenu().Open(build, at, fromTray);
+    }
+
+    /// The menu window, made now if it isn't there; it is let go again after three idle minutes.
+    public MenuPopup WarmMenu()
+    {
+        if (menu == null || menu.IsDisposed)
+        {
+            var m = menu = new MenuPopup(this);
+            m.Closed += () => { if (menu == m) { menuIdle.Stop(); menuIdle.Start(); } };
+            _ = InitMenuAsync(m);
+            menuIdle.Stop();
+            menuIdle.Start();
+        }
+        return menu;
+    }
+
+    async Task InitMenuAsync(MenuPopup m)
+    {
+        try { await m.InitAsync(); }
+        catch (Exception ex) { Log.Error("Menu: could not create its page", ex); if (menu == m) menu = null; m.Dispose(); }
+    }
+
+    void ReleaseMenu()
+    {
+        menuIdle.Stop();
+        if (menu == null || menu.Visible) return;
+        menu.Dispose();
+        menu = null;
+        Trim.Soon();
     }
 
     public void ShowInstanceMenu(WidgetWindow w) => ShowMenu(() => Menus.ForInstance(this, w), Cursor.Position, fromTray: false);
@@ -750,7 +788,7 @@ sealed class App : ApplicationContext
         if (docs == null || docs.IsDisposed)
         {
             docs = new DocsWindow(this);
-            docs.FormClosed += (_, _) => docs = null;
+            docs.FormClosed += (_, _) => { docs = null; Trim.Soon(); };
             docs.Show();
         }
         else
@@ -903,8 +941,9 @@ sealed class App : ApplicationContext
                 case "add": AddWidget(Catalog.Find(Arg(1)) ?? throw new ArgumentException($"widget '{Arg(1)}' not installed")); break;
                 case "remove": Remove(Target().Cfg); break;
                 case "control": OpenControlCenter(a.Length > 1 ? Target().Cfg.Id : null); break;
-                case "menu": // for testing: open a menu at a point; "menu tray x y" or "menu <widget> x y"
+                case "menu": // for testing: open a menu at a point; "menu tray x y" or "menu <widget> x y"; "menu close"
                 {
+                    if (Arg(1) == "close") { menu?.Dismiss(); break; }
                     var at = new Point(int.Parse(Arg(2)), int.Parse(Arg(3)));
                     if (Arg(1) == "tray") ShowMenu(() => Menus.ForTray(this), at, fromTray: true);
                     else { var w = Target(); ShowMenu(() => Menus.ForInstance(this, w), at, fromTray: false); }
