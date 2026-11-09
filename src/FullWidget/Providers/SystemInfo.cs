@@ -130,7 +130,68 @@ static class SystemInfo
     /// adapter, so counting both would add the same bytes twice.
     public static bool IsVirtual(NetworkInterface n) =>
         n.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel ||
-        VirtualHints.Any(h => n.Description.Contains(h, StringComparison.OrdinalIgnoreCase) || n.Name.Contains(h, StringComparison.OrdinalIgnoreCase));
+        VirtualHints.Any(h => n.Description.Contains(h, StringComparison.OrdinalIgnoreCase) || n.Name.Contains(h, StringComparison.OrdinalIgnoreCase)) ||
+        Kind(n) is { hardware: false };
+
+    /// A filter driver's view of another adapter. QoS, WFP, Npcap and Wi-Fi filters each show up
+    /// as an interface of their own (in .NET 9) reporting the very same byte counts as the adapter
+    /// they sit on, so they are never counted or listed.
+    public static bool IsFilter(NetworkInterface n) => Kind(n) is { filter: true };
+
+    // What Windows says about each interface, by its GUID: real hardware, and/or a filter.
+    static Dictionary<Guid, (bool hardware, bool filter)> kinds = new();
+    static long kindsAt = -100_000; // "long ago" (MinValue would overflow in now - kindsAt)
+    static readonly object kindsLock = new();
+
+    static (bool hardware, bool filter)? Kind(NetworkInterface n)
+    {
+        if (!Guid.TryParse(n.Id, out var id)) return null;
+        lock (kindsLock)
+        {
+            long now = Environment.TickCount64;
+            // re-read when an interface we haven't seen appears (at most every few seconds), or once a minute
+            if ((!kinds.ContainsKey(id) && now - kindsAt > 5000) || now - kindsAt > 60000)
+            {
+                kinds = ReadKinds() ?? kinds;
+                kindsAt = now;
+            }
+            return kinds.TryGetValue(id, out var k) ? k : null;
+        }
+    }
+
+    [DllImport("iphlpapi.dll")]
+    static extern int GetIfTable2(out IntPtr table);
+
+    [DllImport("iphlpapi.dll")]
+    static extern void FreeMibTable(IntPtr memory);
+
+    // MIB_IF_TABLE2: a ULONG count, padded to 8, then MIB_IF_ROW2 rows of 1352 bytes. In a row
+    // InterfaceGuid is at 12 and InterfaceAndOperStatusFlags (HardwareInterface = bit 0,
+    // FilterInterface = bit 1) at 1152.
+    const int RowSize = 1352, GuidAt = 12, FlagsAt = 1152;
+
+    static Dictionary<Guid, (bool hardware, bool filter)>? ReadKinds()
+    {
+        try
+        {
+            if (GetIfTable2(out var table) != 0) return null;
+            try
+            {
+                int count = Marshal.ReadInt32(table);
+                var map = new Dictionary<Guid, (bool, bool)>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    IntPtr row = table + 8 + i * RowSize;
+                    var guid = Marshal.PtrToStructure<Guid>(row + GuidAt);
+                    byte flags = Marshal.ReadByte(row + FlagsAt);
+                    map[guid] = ((flags & 1) != 0, (flags & 2) != 0);
+                }
+                return map;
+            }
+            finally { FreeMibTable(table); }
+        }
+        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException) { return null; }
+    }
 
     /// Connected adapters, the one carrying internet traffic (has a gateway, not virtual) first.
     public static object Adapters()
@@ -139,7 +200,7 @@ static class SystemInfo
         foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
         {
             if (n.OperationalStatus != OperationalStatus.Up) continue;
-            if (n.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel) continue;
+            if (n.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel || IsFilter(n)) continue;
             IPInterfaceProperties p;
             try { p = n.GetIPProperties(); } catch (NetworkInformationException) { continue; }
             string desc = n.Description;

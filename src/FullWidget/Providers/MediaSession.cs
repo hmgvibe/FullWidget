@@ -104,14 +104,15 @@ sealed class MediaSession : IDisposable
         finally { Release(s); }
     }
 
-    /// Timed lyrics for the current track (see Lyrics); the title and artist say which track they
-    /// belong to, since the song may change while they are being looked up.
+    /// Timed lyrics for the current track (see Lyrics); the title, artist and duration say which
+    /// track they belong to, since the song may change while they are being looked up.
     public async Task<object> LyricsAsync()
     {
-        if (!available || title.Length == 0) return new { found = false, title, artist };
+        if (!available || title.Length == 0) return new { title, artist, duration = 0L, lyrics = new { found = false } };
         string t = title, a = artist.Length > 0 ? artist : albumArtist;
-        var r = await Lyrics.FindAsync(appId, t, a, album, Math.Max(0, (end - start) / 10_000));
-        return new { title = t, artist, lyrics = r };
+        long duration = Math.Max(0, (end - start) / 10_000);
+        var r = await Lyrics.FindAsync(appId, t, a, album, duration);
+        return new { title = t, artist, duration, lyrics = r };
     }
 
     /// The album art of the current track, served to widgets at /__media/cover/&lt;key&gt;.

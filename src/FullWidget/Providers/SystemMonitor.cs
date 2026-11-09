@@ -139,12 +139,15 @@ sealed class SystemMonitor : IDisposable
     {
         long dRx = 0, dTx = 0, rx = 0, tx = 0;
         var seen = new Dictionary<string, (long rx, long tx)>();
+        var same = new HashSet<(string mac, long rx, long tx)>();
         try
         {
             foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (n.OperationalStatus != OperationalStatus.Up || SystemInfo.IsVirtual(n)) continue;
+                if (n.OperationalStatus != OperationalStatus.Up || SystemInfo.IsFilter(n) || SystemInfo.IsVirtual(n)) continue;
                 var s = n.GetIPStatistics();
+                // last line of defence against one adapter seen twice: same hardware address, same counts
+                if (s.BytesReceived > 0 && !same.Add((n.GetPhysicalAddress().ToString(), s.BytesReceived, s.BytesSent))) continue;
                 seen[n.Id] = (s.BytesReceived, s.BytesSent);
                 rx += s.BytesReceived;
                 tx += s.BytesSent;

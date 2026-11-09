@@ -103,24 +103,40 @@ function followOwnClock() {
   else if (!s.playing && own.since) { own.elapsed += Date.now() - own.since; own.since = 0; }
 }
 
+// The same song name and singer with another length is another recording (live, remix, cut…),
+// whose lyrics and timing differ. A couple of seconds either way is the same one.
+let lyrLen = 0;        // the track length lyrics were asked for, ms (0: not known then)
+const sameLength = (a, b) => Math.abs(a - b) <= 2000;
+
 function lyricsFor(live) {
   followOwnClock();
   const want = live && opts.lyrics !== false && !!s.title;
   const key = want ? trackKey() : "";
+  const len = want && s.duration > 0 ? s.duration : 0;
   if (key !== lyrKey) {
     lyrKey = key;
+    lyrLen = len;
     showLyrics(null);
-    if (key) fetchLyrics(key, 0);
+    if (key) fetchLyrics(key, len, 0);
+  } else if (key && len && !sameLength(len, lyrLen)) {
+    // another version; when the length simply wasn't known yet, keep what's shown until the answer comes
+    if (lyrLen) showLyrics(null);
+    lyrLen = len;
+    fetchLyrics(key, len, 0);
   }
   scheduleLyrics();
 }
 
-function fetchLyrics(key, attempt) {
+function fetchLyrics(key, len, attempt) {
+  const current = () => key === lyrKey && len === lyrLen;
   widget.media.lyrics().then((r) => {
-    if (key !== lyrKey) return; // the song changed meanwhile
+    if (!current()) return; // the song changed meanwhile
     // Windows may not have told the app about the new song yet: ask again in a moment
-    if (r.title !== s.title) { if (attempt < 3) setTimeout(() => key === lyrKey && fetchLyrics(key, attempt + 1), 800); return; }
-    if (r.lyrics && r.lyrics.found) showLyrics({ key, lines: r.lyrics.lines, source: r.lyrics.source });
+    if (r.title !== s.title || (len && !sameLength(r.duration || 0, len))) {
+      if (attempt < 3) setTimeout(() => current() && fetchLyrics(key, len, attempt + 1), 800);
+      return;
+    }
+    showLyrics(r.lyrics && r.lyrics.found ? { key, lines: r.lyrics.lines, source: r.lyrics.source } : null);
   }).catch((e) => widget.log(`media: lyrics: ${e.message}`));
 }
 
