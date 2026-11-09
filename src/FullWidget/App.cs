@@ -313,7 +313,7 @@ sealed class App : ApplicationContext
 
     /// Visible cards of all other widgets, for snapping.
     public IEnumerable<Rectangle> CardRects(WidgetWindow except) =>
-        windows.Values.Where(w => w != except && !Config.Data.HideAll).Select(w => w.CardRect());
+        windows.Values.Where(w => w != except && !w.IsHidden).Select(w => w.CardRect());
 
     // ───────────────────────── arrange mode & control center ─────────────────────────
 
@@ -324,7 +324,8 @@ sealed class App : ApplicationContext
     {
         if (EditMode == on) return;
         EditMode = on;
-        foreach (var w in Windows) w.ApplyState();
+        // widgets whose monitor is missing show up in arrange mode, to be dragged somewhere else
+        foreach (var w in Windows) { w.ApplyState(); w.RefreshVisibility(); }
         Config.SaveSoon(); // nothing to save, but tells listeners the state changed
     }
 
@@ -862,15 +863,16 @@ sealed class App : ApplicationContext
         });
     }
 
-    /// Where a widget should show when the monitor it was placed on is missing (turned off,
-    /// unplugged): null while its own place is visible. The saved place is never overwritten, so
-    /// the widget goes back once that monitor returns. A spot it already stands in is kept.
+    /// Null while the monitor a widget was placed on is there. When it is missing (turned off,
+    /// unplugged) the widget hides with it, and this is a spot on a monitor that is there, for
+    /// arrange mode and the shortcuts (see WidgetWindow.Away). The saved place is never
+    /// overwritten, so the widget shows there again once that monitor returns.
     Point? StandIn(InstanceConfig inst, Point? current)
     {
         if (OnSomeScreen(inst.X, inst.Y, inst.Width, inst.Height)) return null;
         if (current is { } c && OnSomeScreen(c.X, c.Y, inst.Width, inst.Height)) return c;
         var spot = FindFreeSpot(inst.Width, inst.Height);
-        Log.Info($"Instance {inst.Id}: its monitor at ({inst.X},{inst.Y}) is missing; showing it at ({spot.X},{spot.Y}) for now");
+        Log.Info($"Instance {inst.Id}: its monitor at ({inst.X},{inst.Y}) is missing; hidden until it is back");
         return spot;
     }
 

@@ -74,7 +74,8 @@ sealed class WidgetWindow : NativeWindow
 
         ApplyFrame(look);
         ApplyClickThrough();
-        hidden = userHidden = app.Config.Data.HideAll;
+        userHidden = app.Config.Data.HideAll;
+        hidden = HideNow;
         if (!hidden) ShowNoActivate();
         _ = InitWebAsync();
     }
@@ -135,17 +136,21 @@ sealed class WidgetWindow : NativeWindow
 
     // ───────────────────────── geometry ─────────────────────────
 
-    /// Where the card shows while the monitor it belongs on is missing. Its saved place (Cfg.X/Y)
-    /// is kept, so it goes back there when that monitor returns. Null when it is at home.
+    /// Set while the monitor this widget belongs on is missing (turned off, unplugged): the widget
+    /// is hidden with it. Its saved place (Cfg.X/Y) is kept, so it shows there again when that
+    /// monitor returns. Only in arrange mode, or called up with a shortcut, does it appear at this
+    /// stand-in spot on a monitor that is there, so a widget on a monitor gone for good can be
+    /// dragged over. Null when it is at home.
     public Point? Away { get; private set; }
     int CardX => Away?.X ?? Cfg.X;
     int CardY => Away?.Y ?? Cfg.Y;
 
-    /// Shows the card at a stand-in spot (or back at its saved place, with null) without saving.
+    /// Hides the card with its missing monitor, keeping a stand-in spot (or brings it back home, with null). Nothing is saved.
     public void ShowAt(Point? away)
     {
         Away = away;
         if (Handle != IntPtr.Zero) ApplyOuterRect();
+        RefreshVisibility();
     }
 
     /// Window rectangle in physical pixels: the card plus the shadow margin around it.
@@ -171,6 +176,7 @@ sealed class WidgetWindow : NativeWindow
     {
         if (!GetWindowRect(Handle, out var r)) return;
         int m = MarginPx;
+        bool wasAway = Away != null;
         Away = null; // placed by hand: this is its home now
         Cfg.X = r.Left + m;
         Cfg.Y = r.Top + m;
@@ -178,6 +184,7 @@ sealed class WidgetWindow : NativeWindow
         Cfg.Height = Math.Round((r.Bottom - r.Top - 2 * m) / Scale, 1);
         app.Config.SaveSoon();
         if (app.EditMode) Send("state", StatePayload()); // refresh the size label
+        if (wasAway) RefreshVisibility();
     }
 
     /// While dragging, snaps the card to nearby lines (see SnapLayout) and shows what it lined up
@@ -242,6 +249,7 @@ sealed class WidgetWindow : NativeWindow
         Cfg.X = x;
         Cfg.Y = y;
         ApplyOuterRect();
+        RefreshVisibility();
         app.Config.SaveSoon();
     }
 
@@ -454,9 +462,17 @@ sealed class WidgetWindow : NativeWindow
     /// Hidden for any reason: such widgets get no system updates.
     public bool IsHidden => hidden;
 
+    /// Hidden by "hide all", a full-screen app, or a missing monitor (except in arrange mode);
+    /// called up with a shortcut, it shows anyway.
+    bool HideNow => (userHidden || paused || (Away != null && !app.EditMode)) && !peeking;
+
+    /// After something that decides whether it shows has changed (e.g. arrange mode).
+    public void RefreshVisibility() => ApplyVisibility();
+
     void ApplyVisibility()
     {
-        bool hide = (userHidden || paused) && !peeking;
+        bool hide = HideNow;
+        if (Handle == IntPtr.Zero) { hidden = hide; return; } // Create shows it or not
         if (hidden == hide || closing) return;
         hidden = hide;
         if (hide)
