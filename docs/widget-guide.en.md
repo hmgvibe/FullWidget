@@ -471,7 +471,7 @@ widget.appearance.onChange((a) => {});
 // Locked, layer or click-through changed: { locked, layer, clickThrough }
 widget.on("state", (s) => {});
 
-// Called up with a shortcut (the notes shortcut, for fullwidget.notes): focus your main input
+// Called up with a shortcut (the notes and to-do shortcuts, for fullwidget.notes and fullwidget.todo): focus your main input
 widget.on("summon", () => {});
 
 // Write to the FullWidget log

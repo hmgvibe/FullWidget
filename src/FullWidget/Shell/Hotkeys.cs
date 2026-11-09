@@ -12,8 +12,10 @@ sealed class Hotkeys : NativeWindow, IDisposable
     public const string ToggleAll = "toggleAll";
     /// Bring the sticky notes to the front to jot something down.
     public const string Notes = "notes";
-    public static readonly string[] Actions = { ToggleAll, Notes };
-    public static Dictionary<string, string> Defaults() => new() { [ToggleAll] = "Ctrl+Alt+W", [Notes] = "Ctrl+Alt+N" };
+    /// Bring the to-do list to the front to add an item.
+    public const string Todo = "todo";
+    public static readonly string[] Actions = { ToggleAll, Notes, Todo };
+    public static Dictionary<string, string> Defaults() => new() { [ToggleAll] = "Ctrl+Alt+W", [Notes] = "Ctrl+Alt+N", [Todo] = "Ctrl+Alt+T" };
 
     const int WM_HOTKEY = 0x0312;
     const uint MOD_ALT = 1, MOD_CONTROL = 2, MOD_SHIFT = 4, MOD_WIN = 8, MOD_NOREPEAT = 0x4000;
@@ -35,7 +37,9 @@ sealed class Hotkeys : NativeWindow, IDisposable
     /// Registers the given shortcuts, replacing the ones before.
     public void Apply(Dictionary<string, string> map)
     {
-        keys = Actions.ToDictionary(a => a, a => map.TryGetValue(a, out var k) ? k ?? "" : "");
+        // a shortcut that is new since the settings were saved gets its default ("" means turned off)
+        var defaults = Defaults();
+        keys = Actions.ToDictionary(a => a, a => map.TryGetValue(a, out var k) ? k ?? "" : defaults.GetValueOrDefault(a, ""));
         Register();
     }
 

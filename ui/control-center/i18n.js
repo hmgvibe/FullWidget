@@ -20,6 +20,8 @@ const PHRASES = [
   ["顯示／隱藏全部組件", "显示／隐藏全部组件", "Show / hide all widgets"],
   ["在任何地方按下都能切換。", "在任何地方按下都能切换。", "Works from anywhere."],
   ["叫出便籤", "呼出便签", "Bring up notes"],
+  ["叫出待辦清單", "呼出待办清单", "Bring up the to-do list"],
+  ["待辦清單會來到最前面，直接輸入新的一項；再按一次或點別處就回去。桌面上沒有待辦清單時會新增一個。", "待办清单会来到最前面，直接输入新的一项；再按一次或点别处就回去。桌面上没有待办清单时会新增一个。", "Your to-do list comes to the front, ready for a new item; press again or click elsewhere to send it back. Adds one if there isn't one."],
   ["便籤會來到最前面，直接打字；再按一次或點別處就回去。桌面上沒有便籤時會新增一張。", "便签会来到最前面，直接打字；再按一次或点别处就回去。桌面上没有便签时会新增一张。", "Your note comes to the front, ready to type in; press again or click elsewhere to send it back. Adds a note if there isn't one."],
   ["未設定", "未设置", "Not set"],
   ["更改快捷鍵", "更改快捷键", "Change shortcut"],

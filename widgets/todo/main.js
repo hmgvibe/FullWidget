@@ -2,6 +2,9 @@ const $ = (id) => document.getElementById(id);
 const t = widget.t;
 let items = []; // { id, text, done }
 
+// called up with the to-do shortcut: ready to type a new item
+widget.on("summon", () => $("new").focus());
+
 $("new").placeholder = t({ "zh-TW": "新增一項，按 Enter", "zh-CN": "新增一项，按 Enter", en: "Add an item" });
 $("clear").textContent = t({ "zh-TW": "清除已完成", "zh-CN": "清除已完成", en: "Clear done" });
 

@@ -2,7 +2,7 @@
   "id": "fullwidget.todo",
   "name": { "zh-TW": "待辦清單", "zh-CN": "待办清单", "en": "To-do list" },
   "description": { "zh-TW": "勾掉做完的事", "zh-CN": "勾掉做完的事", "en": "Tick things off" },
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "FullWidget",
   "entry": "index.html",
   "icon": "icon.svg",

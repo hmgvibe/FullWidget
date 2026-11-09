@@ -578,6 +578,7 @@ function pageSettings() {
         <div class="group-title">${t("快捷鍵")}</div>
         ${row("顯示／隱藏全部組件", "在任何地方按下都能切換。", hotkeyCtl("toggleAll"), { key: "hk-all", stack: true })}
         ${row("叫出便籤", "便籤會來到最前面，直接打字；再按一次或點別處就回去。桌面上沒有便籤時會新增一張。", hotkeyCtl("notes"), { key: "hk-notes", stack: true })}
+        ${row("叫出待辦清單", "待辦清單會來到最前面，直接輸入新的一項；再按一次或點別處就回去。桌面上沒有待辦清單時會新增一個。", hotkeyCtl("todo"), { key: "hk-todo", stack: true })}
         <div class="group-title">${t("效能")}</div>
         ${row("全螢幕時暫停", "玩遊戲、看全螢幕影片或簡報時，那個螢幕上的組件會隱藏並停止更新。", control({ key: "pauseFullscreen", type: "toggle", label: "全螢幕時暫停" }, S.pauseFullscreen, "app"), { key: "pausefs" })}
         ${row("低資源模式", "關閉 GPU 加速並降低記憶體目標，約省 15 MB；複雜動畫會改由處理器繪製。", control({ key: "lowResource", type: "toggle", label: "低資源模式" }, S.lowResource, "app") , { key: "low" })}
@@ -714,7 +715,7 @@ function stopRecording() {
 }
 
 function saveHotkey(action, keys) {
-  const name = t(action === "notes" ? "叫出便籤" : "顯示／隱藏全部組件");
+  const name = t({ notes: "叫出便籤", todo: "叫出待辦清單" }[action] || "顯示／隱藏全部組件");
   api("app.hotkey", { action, keys })
     .then(() => toast(keys ? t("「{name}」改成 {keys}", { name, keys }) : t("已關閉「{name}」", { name })))
     .catch(() => {})

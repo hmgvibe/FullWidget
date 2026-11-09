@@ -527,27 +527,28 @@ sealed class App : ApplicationContext
     void RunShortcut(string action)
     {
         if (action == Hotkeys.ToggleAll) SetHideAll(!Config.Data.HideAll);
-        else if (action == Hotkeys.Notes) ToggleNotes();
+        else if (action == Hotkeys.Notes) Summon("fullwidget.notes");
+        else if (action == Hotkeys.Todo) Summon("fullwidget.todo");
     }
 
-    const string NotesWidget = "fullwidget.notes";
-
-    /// The notes shortcut: the note used last comes above everything, ready to type in; pressed
-    /// again it goes back. With no note on the desktop yet, one is added.
-    void ToggleNotes()
+    /// The notes and to-do shortcuts: the copy of the widget used last comes above everything,
+    /// ready to type in; pressed again it goes back. With none on the desktop yet, one is added.
+    void Summon(string widgetId)
     {
-        var notes = Windows.Where(w => w.Manifest.Id.Equals(NotesWidget, StringComparison.OrdinalIgnoreCase)).ToList();
-        if (notes.FirstOrDefault(w => w.Peeking) is { } up) { up.Peek(false, giveBack: true); return; }
-        if (notes.Count == 0)
+        var all = Windows.Where(w => w.Manifest.Id.Equals(widgetId, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (all.FirstOrDefault(w => w.Peeking) is { } up) { up.Peek(false, giveBack: true); return; }
+        // only one widget up front at a time
+        foreach (var other in Windows.Where(w => w.Peeking)) other.Peek(false);
+        if (all.Count == 0)
         {
-            if (Catalog.Find(NotesWidget) is not { } m) return;
+            if (Catalog.Find(widgetId) is not { } m) return;
             var inst = AddInstance(m);
             Config.SaveSoon();
-            Log.Info($"Added {NotesWidget} as {inst.Id} for the notes shortcut");
+            Log.Info($"Added {widgetId} as {inst.Id} for its shortcut");
             if (Open(inst) is not { } w) return;
-            notes.Add(w);
+            all.Add(w);
         }
-        notes.MaxBy(w => w.ActivatedAt)!.Peek(true);
+        all.MaxBy(w => w.ActivatedAt)!.Peek(true);
     }
 
     /// Changes one shortcut; "" turns it off.
