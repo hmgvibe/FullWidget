@@ -22,7 +22,7 @@ static class Lyrics
     static readonly HttpClient Http = CreateHttp();
     static HttpClient CreateHttp()
     {
-        var c = new HttpClient(new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.All, PooledConnectionLifetime = TimeSpan.FromMinutes(5) })
+        var c = new HttpClient(new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.All, PooledConnectionLifetime = TimeSpan.FromMinutes(5), PooledConnectionIdleTimeout = TimeSpan.FromSeconds(20) })
         { Timeout = TimeSpan.FromSeconds(8) };
         // these services turn away requests that don't look like a browser
         c.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36");

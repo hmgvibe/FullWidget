@@ -21,6 +21,7 @@ sealed class ControlCenter : Form
     readonly WebView2 web;
     readonly System.Windows.Forms.Timer pushTimer = new() { Interval = 120 };
     bool ready;
+    PageWatch? watch;
 
     public ControlCenter(App app)
     {
@@ -75,7 +76,10 @@ sealed class ControlCenter : Form
             core.NavigationStarting += (_, a) =>
             {
                 if (!a.Uri.StartsWith($"https://{Host}/", StringComparison.OrdinalIgnoreCase)) a.Cancel = true;
+                else ready = false; // a reload: events wait for the page again
             };
+            watch = new PageWatch("Control center", $"https://{Host}/", () => IsDisposed ? null : web.CoreWebView2);
+            watch.Attach(core);
             core.Navigate($"https://{Host}/index.html");
         }
         catch (Exception ex)
@@ -175,6 +179,7 @@ sealed class ControlCenter : Form
 
         if (method == "ready")
         {
+            watch?.Ready();
             ready = true;
             Push();
             foreach (var (ev, data) in queued) Send(ev, data);
@@ -210,6 +215,7 @@ sealed class ControlCenter : Form
     {
         app.Config.Changed -= OnConfigChanged;
         pushTimer.Dispose();
+        watch?.Dispose();
         base.OnFormClosed(e);
     }
 }

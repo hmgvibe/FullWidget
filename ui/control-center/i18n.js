@@ -244,6 +244,17 @@ const PHRASES = [
   ["便攜模式：資料存在程式資料夾裏。", "便携模式：数据存在程序文件夹里。", "Portable mode: data stays in the app's folder."],
   ["關於", "关于", "About"],
   ["版本", "版本", "Version"],
+  // ── turning widgets off ──
+  ["開啟", "开启", "Turn on"],
+  ["關閉", "关闭", "Turn off"],
+  ["已關閉", "已关闭", "Off"],
+  ["已關閉 · 設定都保留", "已关闭 · 设置都保留", "Off · settings kept"],
+  ["桌面上有 {n} 個，{m} 個已關閉", "桌面上有 {n} 个，{m} 个已关闭", "{n} on the desktop, {m} turned off"],
+  ["這個組件已關閉", "这个组件已关闭", "This widget is off"],
+  ["它不在桌面上，也不會運行；設定、位置和保存的內容都還在，開啟後就回到原來的樣子。", "它不在桌面上，也不会运行；设置、位置和保存的内容都还在，开启后就回到原来的样子。", "It's not on the desktop and doesn't run. Its settings, place and saved content are kept: turn it on and it's back as it was."],
+  ["從桌面拿走，設定都保留", "从桌面拿走，设置都保留", "Take it off the desktop, keeping its settings"],
+  ["已開啟「{name}」", "已开启“{name}”", "Turned \"{name}\" on"],
+  ["已關閉「{name}」，設定都保留", "已关闭“{name}”，设置都保留", "Turned \"{name}\" off; its settings are kept"],
   // ── updates ──
   ["自動檢查更新", "自动检查更新", "Check for updates"],
   ["每天看一兩次有沒有新版本，有的話在托盤提示。只連 GitHub，不會自己安裝。", "每天看一两次有没有新版本，有的话在托盘提示。只连 GitHub，不会自己安装。", "Looks for a new version once or twice a day and says so from the tray. Only asks GitHub; never installs by itself."],

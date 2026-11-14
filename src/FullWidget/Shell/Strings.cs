@@ -53,6 +53,8 @@ static class Strings
     public static string Reload => T("重新載入", "重新加载", "Reload");
     public static string DevTools => T("開發者工具", "开发者工具", "Developer tools");
     public static string Remove => T("移除", "移除", "Remove");
+    public static string TurnOff => T("關閉這個組件", "关闭这个组件", "Turn this widget off");
+    public static string IsOff => T("已關閉", "已关闭", "Off");
     public static string LayerTopShort => T("置頂", "置顶", "Top");
     public static string LayerNormalShort => T("普通", "普通", "Normal");
     public static string LayerDesktopShort => T("桌面", "桌面", "Desktop");

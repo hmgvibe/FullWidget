@@ -50,6 +50,9 @@ sealed class InstanceConfig
     public double Height { get; set; }
     /// "desktop" | "normal" | "top"
     public string Layer { get; set; } = "desktop";
+    /// Turned off: not on the desktop and not running, with its settings, place and saved
+    /// content kept, so turning it on brings it back as it was (FullWidget#3).
+    public bool Off { get; set; }
     public bool Locked { get; set; }
     public bool ClickThrough { get; set; }
     /// Overrides the global theme for this instance only; null follows the global theme.

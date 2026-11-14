@@ -49,6 +49,7 @@ static class Menus
         };
         if (cfg.DeveloperMode) items.Add(Item(Strings.DevTools, w.OpenDevTools));
         items.Add(Sep);
+        items.Add(Item(Strings.TurnOff, () => app.SetOff(w.Cfg, true)));
         items.Add(Item(Strings.Remove, () => app.Remove(w.Cfg), danger: true, confirm: Strings.RemoveConfirmShort));
         return items;
     }
@@ -72,12 +73,16 @@ static class Menus
 
         var counts = windows.GroupBy(w => w.Manifest.Id).ToDictionary(g => g.Key, g => g.Count());
         var seen = new Dictionary<string, int>();
+        // the ones turned off are listed too, so they can be found again
         var mine = windows.Select(w =>
         {
             string name = w.Manifest.DisplayName;
             if (counts[w.Manifest.Id] > 1) name += $" #{seen[w.Manifest.Id] = seen.GetValueOrDefault(w.Manifest.Id) + 1}";
             return Item(name, () => app.OpenControlCenter(w.Cfg.Id), hint: LayerName(w.Cfg.Layer), icon: Icons.For(w.Manifest));
         }).ToList();
+        foreach (var inst in cfg.Instances.Where(i => i.Off))
+            if (app.Catalog.Find(inst.Widget) is { } m)
+                mine.Add(Item(m.DisplayName, () => app.OpenControlCenter(inst.Id), hint: Strings.IsOff, icon: Icons.For(m)));
 
         var themes = Themes.All.Select(t => Check(t.DisplayName, cfg.ThemeId == t.Id, () => app.SetGlobalTheme(t.Id))).ToList();
         bool allLocked = windows.Count > 0 && windows.All(w => w.Cfg.Locked);

@@ -74,6 +74,7 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
                     height = i.Height,
                     size = m?.Size,
                     layer = i.Layer,
+                    off = i.Off,
                     locked = i.Locked,
                     clickThrough = i.ClickThrough,
                     themeId = i.ThemeId,
@@ -182,6 +183,7 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
             case "instance.identify": Win().Identify(); break;
             case "instance.devtools": Win().OpenDevTools(); break;
             case "instance.remove": app.Remove(Inst()); break;
+            case "instance.off": app.SetOff(Inst(), On()); break;
             case "instance.duplicate": return Done(new { id = app.Duplicate(Inst()).Id });
 
             case "widget.add":

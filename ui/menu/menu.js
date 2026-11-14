@@ -15,15 +15,27 @@ let shape = "";     // ids and kinds, to tell a value change from a new menu
 
 const send = (m, p) => host && host.postMessage(p === undefined ? { m } : { m, p });
 
+// Now and then a page starts without its bridge to FullWidget; a reload brings it back (three
+// times at most; FullWidget also reloads a menu page that never said it was ready).
+let heard = false;
+if (!host) {
+  let n = 0;
+  try { n = Number(sessionStorage.getItem("fw-reload")) || 0; sessionStorage.setItem("fw-reload", String(n + 1)); } catch { /* fine */ }
+  if (n < 3) setTimeout(() => location.reload(), 300);
+}
+
 if (host) {
   host.addEventListener("message", (e) => {
     const { ev, d } = e.data || {};
+    if (!heard) { heard = true; try { sessionStorage.removeItem("fw-reload"); } catch { /* fine */ } }
     if (ev === "open") open(d);
     else if (ev === "update") update(d.items);
     else if (ev === "shown") requestAnimationFrame(() => card.classList.add("in"));
     else if (ev === "reset") reset();
   });
   send("ready");
+  // again, in case the first one was lost while the page was starting (FullWidget doesn't mind)
+  for (const ms of [1200, 3000]) setTimeout(() => { if (!heard) send("ready"); }, ms);
 }
 
 // ───────────────────────── drawing ─────────────────────────

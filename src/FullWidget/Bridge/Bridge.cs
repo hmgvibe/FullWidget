@@ -26,6 +26,10 @@ sealed class WidgetBridge(App app)
             AllowAutoRedirect = false, // redirects are followed by hand so each hop is permission-checked
             AutomaticDecompression = DecompressionMethods.All,
             PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+            // A connection left idle can be dropped by a router or proxy without a word; a request
+            // sent on it then just waits out the timeout. Reuse only ones idle for a few seconds.
+            PooledConnectionIdleTimeout = TimeSpan.FromSeconds(20),
+            ConnectTimeout = TimeSpan.FromSeconds(10),
         })
         { Timeout = TimeSpan.FromSeconds(20) };
         c.DefaultRequestHeaders.UserAgent.ParseAdd($"FullWidget/{App.Version}");

@@ -25,6 +25,7 @@ sealed class MenuPopup : Form
     (Func<List<PopItem>> build, Point at, bool fromTray)? pending;
     Point anchor;
     bool ready, upward, alignRight;
+    PageWatch? watch;
     int dpi = 96;
 
     /// The menu went away (picked, dismissed or clicked outside).
@@ -85,7 +86,10 @@ sealed class MenuPopup : Form
         core.NavigationStarting += (_, a) =>
         {
             if (!a.Uri.StartsWith($"https://{Host}/", StringComparison.OrdinalIgnoreCase)) a.Cancel = true;
+            else ready = false; // a reload: a menu asked for now waits for the page again
         };
+        watch = new PageWatch("Menu", $"https://{Host}/", () => IsDisposed ? null : web.CoreWebView2);
+        watch.Attach(core);
         core.Navigate($"https://{Host}/index.html");
     }
 
@@ -145,6 +149,7 @@ sealed class MenuPopup : Form
         switch (mEl.GetString())
         {
             case "ready":
+                watch?.Ready();
                 ready = true;
                 if (pending is { } q) { pending = null; Open(q.build, q.at, q.fromTray); }
                 break;

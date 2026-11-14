@@ -212,6 +212,7 @@ sealed class App : ApplicationContext
 
     WidgetWindow? Open(InstanceConfig inst)
     {
+        if (inst.Off) return null;
         var m = Catalog.Find(inst.Widget);
         if (m == null)
         {
@@ -295,6 +296,22 @@ sealed class App : ApplicationContext
         Open(copy);
         Config.SaveSoon();
         return copy;
+    }
+
+    /// Turns a widget off (it leaves the desktop and stops, its settings and content kept) or on again.
+    public void SetOff(InstanceConfig inst, bool off)
+    {
+        if (inst.Off == off) return;
+        inst.Off = off;
+        if (off)
+        {
+            if (windows.TryGetValue(inst.Id, out var w)) { w.Close(); windows.Remove(inst.Id); }
+            Notifier.Cancel(inst.Id, null);
+            Trim.Soon();
+        }
+        else Open(inst);
+        Config.SaveSoon();
+        Log.Info($"{(off ? "Turned off" : "Turned on")} {inst.Id} ({inst.Widget})");
     }
 
     /// Removes an instance, including one whose widget is no longer installed.
@@ -540,6 +557,12 @@ sealed class App : ApplicationContext
         if (all.FirstOrDefault(w => w.Peeking) is { } up) { up.Peek(false, giveBack: true); return; }
         // only one widget up front at a time
         foreach (var other in Windows.Where(w => w.Peeking)) other.Peek(false);
+        // one that was turned off is turned on again rather than adding another
+        if (all.Count == 0 && Config.Data.Instances.LastOrDefault(i => i.Off && i.Widget.Equals(widgetId, StringComparison.OrdinalIgnoreCase)) is { } off)
+        {
+            SetOff(off, false);
+            if (WindowOf(off.Id) is { } w) all.Add(w);
+        }
         if (all.Count == 0)
         {
             if (Catalog.Find(widgetId) is not { } m) return;

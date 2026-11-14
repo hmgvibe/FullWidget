@@ -466,3 +466,11 @@ input[type="date"].field::-webkit-calendar-picker-indicator { filter: invert(1);
 .upd-bar { flex: 1; min-width: 80px; height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
 .upd-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.25s ease; }
 .upd-pct { min-width: 3.2em; text-align: right; font-size: 12px; color: var(--muted); }
+
+/* turning widgets off (FullWidget#3) */
+.item.off .tile, .item.off .name { opacity: 0.5; }
+.item .power { flex: none; width: 34px; height: 20px; border-radius: 99px; background: var(--accent); position: relative; cursor: pointer; transition: background 0.15s; }
+.item .power::after { content: ""; position: absolute; top: 3px; left: 17px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent-ink); transition: left 0.15s; }
+.item .power[aria-checked="false"] { background: rgba(255, 255, 255, 0.14); }
+.item .power[aria-checked="false"]::after { left: 3px; background: var(--muted); }
+.item .power:hover { filter: brightness(1.1); }

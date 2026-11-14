@@ -3,6 +3,16 @@
    this page renders it and calls the host for each change the user makes. */
 
 const host = window.chrome && window.chrome.webview;
+
+// Now and then a page starts without its bridge to FullWidget (window.chrome.webview); a reload
+// brings it back. Twice at most: after that the failure screen below shows, with a retry.
+const reloads = (() => { try { return Number(sessionStorage.getItem("fw-reload")) || 0; } catch { return 0; } })();
+function reloadSoon() {
+  try { sessionStorage.setItem("fw-reload", String(reloads + 1)); } catch { /* storage off: reload anyway */ }
+  setTimeout(() => location.reload(), 300);
+}
+if (!host && reloads < 2) reloadSoon();
+
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const round = (n) => Math.round(Number(n) || 0);
@@ -46,6 +56,7 @@ if (host) {
       msg.e !== undefined ? p.reject(new Error(msg.e)) : p.resolve(msg.r);
     } else if (msg.ev === "state") {
       clearTimeout(loadTimer);
+      if (!S) try { sessionStorage.removeItem("fw-reload"); } catch { /* fine */ }
       S = msg.d;
       LANG = S.lang || "zh-TW";
       try { render(); } catch (err) { console.error(err); loadFailed(); }
@@ -73,9 +84,12 @@ if (host) {
       openSheet("allow", msg.d);
     }
   });
+  // ready, and again in case the first one was lost while the page was starting
   host.postMessage({ m: "ready" });
-  loadTimer = setTimeout(loadFailed, 6000);
+  for (const ms of [1500, 3500]) setTimeout(() => { if (!S) host.postMessage({ m: "ready" }); }, ms);
 }
+// if nothing has come in 6 seconds (bridge or not), say so with a way to try again
+loadTimer = setTimeout(loadFailed, 6000);
 
 /** The host couldn't send what the page shows, or it never came: say so, with a way to try
     again, rather than leave the page blank. */
@@ -88,11 +102,14 @@ function loadFailed() {
     <div class="row-btns"><button class="btn primary" id="load-retry">${t("再試一次")}</button>
     <button class="btn" id="load-folder">${t("打開資料夾")}</button></div></div>`;
   document.getElementById("load-retry").onclick = () => {
+    if (!host) { try { sessionStorage.removeItem("fw-reload"); } catch { /* fine */ } location.reload(); return; }
     main.innerHTML = "";
     loadTimer = setTimeout(loadFailed, 6000);
     host.postMessage({ m: "ready" });
   };
-  document.getElementById("load-folder").onclick = () => host.postMessage({ m: "app.openFolder", p: { which: "data" } });
+  const folder = document.getElementById("load-folder");
+  if (host) folder.onclick = () => host.postMessage({ m: "app.openFolder", p: { which: "data" } });
+  else folder.hidden = true;
 }
 
 // ───────────────────────── words ─────────────────────────
@@ -236,14 +253,17 @@ function pageMine() {
   const inst = list.find((i) => i.id === ui.sel);
   const items = list.map((i) => {
     const flags = [i.locked ? `<span class="flag">${t("鎖定")}</span>` : "", i.clickThrough ? `<span class="flag warn">${t("穿透")}</span>` : ""].join("");
-    return `<button class="item${i.id === ui.sel ? " on" : ""}" data-action="select" data-id="${i.id}" data-key="${i.id}">
+    return `<button class="item${i.id === ui.sel ? " on" : ""}${i.off ? " off" : ""}" data-action="select" data-id="${i.id}" data-key="${i.id}">
       ${tile(i)}
       <span style="min-width:0"><div class="name">${esc(nm[i.id])}${flags ? `<span class="flags">${flags}</span>` : ""}</div>
-      <div class="meta">${i.missing ? t("組件已不存在") : `${layerName(i.layer)} · ${esc(instThemeName(i))}`}</div></span>
-      <span class="size">${round(i.width)}×${round(i.height)}</span>
+      <div class="meta">${i.missing ? t("組件已不存在") : i.off ? t("已關閉 · 設定都保留") : `${layerName(i.layer)} · ${esc(instThemeName(i))}`}</div></span>
+      ${i.missing ? `<span class="size">${round(i.width)}×${round(i.height)}</span>`
+        : `<span class="power" role="switch" aria-checked="${!i.off}" aria-label="${esc(t(i.off ? "開啟" : "關閉"))}" title="${esc(t(i.off ? "開啟" : "關閉"))}" data-action="power" data-id="${i.id}"></span>`}
     </button>`;
   }).join("");
-  return `<div class="page-head" data-key="h-mine"><h1>${t("我的組件")}<span class="sub">${t("桌面上有 {n} 個", { n: list.length })}</span></h1>
+  const off = list.filter((i) => i.off).length;
+  const count = off ? t("桌面上有 {n} 個，{m} 個已關閉", { n: list.length - off, m: off }) : t("桌面上有 {n} 個", { n: list.length });
+  return `<div class="page-head" data-key="h-mine"><h1>${t("我的組件")}<span class="sub">${count}</span></h1>
       <button class="btn" data-action="goto" data-page="add">${t("＋ 添加組件")}</button></div>
     <div class="mine stagger" data-key="mine">
       <div class="list scroll" style="--i:0"><div class="list-mark"></div>${items}</div>
@@ -256,6 +276,16 @@ function editor(i, name) {
     return `<div class="empty" data-key="missing-${i.id}"><h3>${t("「{name}」已不在組件資料夾裏", { name: esc(i.widget) })}</h3>
       <div>${t("可能被刪除或改名了。放回資料夾後到「添加組件」按「重新掃描」，它就會回來。")}</div>
       <button class="btn danger" data-action="remove">${t("移除這一項")}</button></div>`;
+  }
+  if (i.off) {
+    return `<div class="ed-head" data-key="ed-head">
+        ${tile(i, true)}
+        <div class="ed-title"><h2>${esc(name)}</h2><div class="meta">${t("已關閉")}</div></div>
+        <div class="ed-actions"><button class="btn quiet danger" data-action="remove">${t("移除")}</button></div>
+      </div>
+      <div class="empty" data-key="off-${i.id}"><h3>${t("這個組件已關閉")}</h3>
+        <div>${t("它不在桌面上，也不會運行；設定、位置和保存的內容都還在，開啟後就回到原來的樣子。")}</div>
+        <button class="btn primary" data-action="power" data-id="${i.id}">${t("開啟")}</button></div>`;
   }
   const tabs = [["content", "內容"], ["look", "外觀"], ["behavior", "位置與行為"]];
   const body = ui.tab === "look" ? tabLook(i) : ui.tab === "behavior" ? tabBehavior(i) : tabContent(i);
@@ -270,6 +300,7 @@ function editor(i, name) {
         <button class="btn" data-action="identify" title="${esc(t("讓它在桌面上閃兩下"))}">${t("定位")}</button>
         <button class="btn quiet" data-action="reload">${t("重新載入")}</button>
         <button class="btn quiet" data-action="duplicate">${t("複製一份")}</button>
+        <button class="btn quiet" data-action="power" data-id="${i.id}" title="${esc(t("從桌面拿走，設定都保留"))}">${t("關閉")}</button>
         <button class="btn quiet danger" data-action="remove">${t("移除")}</button>
       </div>
     </div>
@@ -1030,6 +1061,12 @@ function onAction(a) {
       $("main").querySelector(".gallery").scrollTop = 0;
       break;
     case "select": ui.sel = a.dataset.id; remember(); render(); break;
+    case "power": {
+      const it = S.instances.find((x) => x.id === a.dataset.id);
+      if (!it) break;
+      api("instance.off", { id: it.id, on: !it.off }).then(() => toast(t(it.off ? "已開啟「{name}」" : "已關閉「{name}」，設定都保留", { name: it.name })));
+      break;
+    }
     case "tab": ui.tab = a.dataset.tab; remember(); render(); break;
     case "identify": api("instance.identify", { id }); break;
     case "reload": api("instance.reload", { id }).then(() => toast(t("已重新載入"))); break;
