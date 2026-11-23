@@ -416,7 +416,7 @@ sealed class WidgetWindow : NativeWindow
         const uint keep = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
         if (DesktopLayer)
         {
-            SetWindowPos(Handle, HWND_NOTOPMOST, 0, 0, 0, 0, keep);
+            MoveInOrder(HWND_NOTOPMOST);
             SetWindowLongPtr(Handle, GWLP_HWNDPARENT, FindWindow("Progman", null));
             SettleDesktopLayer();
         }
@@ -435,7 +435,25 @@ sealed class WidgetWindow : NativeWindow
         if (progman == IntPtr.Zero) return;
         var above = GetWindow(progman, GW_HWNDPREV);
         if (above == IntPtr.Zero || above == Handle) return;
-        SetWindowPos(Handle, above, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        MoveInOrder(above);
+    }
+
+    /// Our own change of stacking order: the one kind a press on the widget doesn't hold back.
+    void MoveInOrder(IntPtr after)
+    {
+        movingInOrder = true;
+        try { SetWindowPos(Handle, after, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE); }
+        finally { movingInOrder = false; }
+    }
+
+    bool movingInOrder;
+
+    /// A mouse button is down with the pointer on this window: Windows is about to lift it.
+    bool PressedOnThis()
+    {
+        if (((GetAsyncKeyState(VK_LBUTTON) | GetAsyncKeyState(VK_RBUTTON)) & 0x8000) == 0) return false;
+        return GetCursorPos(out var p) && GetWindowRect(Handle, out var r)
+            && p.X >= r.Left && p.X < r.Right && p.Y >= r.Top && p.Y < r.Bottom;
     }
 
     void ShowNoActivate()
@@ -456,12 +474,12 @@ sealed class WidgetWindow : NativeWindow
             // Windows keeps a background program's windows under the focused one, here the
             // desktop: so always on top, until an app has the focus again (the next branch).
             SetWindowLongPtr(Handle, GWLP_HWNDPARENT, IntPtr.Zero);
-            SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            MoveInOrder(HWND_TOPMOST);
         }
         else
         {
             if ((GetWindowLongPtr(Handle, GWL_EXSTYLE).ToInt64() & WS_EX_TOPMOST) != 0)
-                SetWindowPos(Handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                MoveInOrder(HWND_NOTOPMOST);
             var progman = FindWindow("Progman", null);
             if (GetWindow(Handle, GW_OWNER) != progman) SetWindowLongPtr(Handle, GWLP_HWNDPARENT, progman);
             PlaceAboveDesktop();
@@ -600,7 +618,24 @@ sealed class WidgetWindow : NativeWindow
                 if (peeking && (m.WParam.ToInt64() & 0xFFFF) == WA_INACTIVE)
                     app.Post(() => Peek(false)); // another window was used: back to its layer
                 else if (DesktopLayer && !peeking && (m.WParam.ToInt64() & 0xFFFF) != WA_INACTIVE)
+                {
                     app.Post(SettleDesktopLayer);
+                    // and once more: the lift can come after this message
+                    var again = new System.Windows.Forms.Timer { Interval = 250 };
+                    again.Tick += (_, _) => { again.Dispose(); SettleDesktopLayer(); };
+                    again.Start();
+                }
+                break;
+
+            case WM_WINDOWPOSCHANGING:
+                // A click on a desktop-layer widget doesn't lift it over the apps, not even for a
+                // moment. Only for a press on it: Show desktop has to be able to move it.
+                if (DesktopLayer && !peeking && !closing && !movingInOrder && !app.DesktopShown && PressedOnThis())
+                {
+                    var wp = Marshal.PtrToStructure<WINDOWPOS>(m.LParam);
+                    wp.flags |= SWP_NOZORDER;
+                    Marshal.StructureToPtr(wp, m.LParam, false);
+                }
                 break;
 
             case WM_GETMINMAXINFO:

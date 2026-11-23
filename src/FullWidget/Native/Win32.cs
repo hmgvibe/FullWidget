@@ -97,6 +97,8 @@ internal static class Win32
     [DllImport("user32.dll")] public static extern bool IsZoomed(IntPtr hwnd);
     [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(IntPtr hwnd, System.Text.StringBuilder sb, int max);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern IntPtr LoadLibraryEx(string file, IntPtr reserved, uint flags);
+    public const uint LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x800;
     [DllImport("gdi32.dll")] public static extern IntPtr GetStockObject(int obj);
     public const int BLACK_BRUSH = 4;
 

@@ -29,12 +29,15 @@ static class Appearance
 
     public static ThemeInfo ThemeOf(AppConfig cfg, InstanceConfig? inst) => Themes.Get(inst?.ThemeId ?? cfg.ThemeId);
 
-    /// Theme defaults plus the user's global tweaks: the keys the :root layer sets.
+    /// Theme defaults plus the user's global tweaks: the keys the :root layer sets. The tweaks
+    /// belong to the global theme, so a widget with a theme of its own doesn't get them.
     static Dictionary<string, JsonElement> ThemeLayer(AppConfig cfg, InstanceConfig? inst)
     {
         var d = new Dictionary<string, JsonElement>();
-        foreach (var (k, v) in ThemeOf(cfg, inst).Appearance) if (Defaults.ContainsKey(k)) d[k] = v;
-        foreach (var (k, v) in cfg.Theme) if (Defaults.ContainsKey(k)) d[k] = v;
+        var theme = ThemeOf(cfg, inst);
+        foreach (var (k, v) in theme.Appearance) if (Defaults.ContainsKey(k)) d[k] = v;
+        if (theme.Id == Themes.Get(cfg.ThemeId).Id)
+            foreach (var (k, v) in cfg.Theme) if (Defaults.ContainsKey(k)) d[k] = v;
         return Resolve(d);
     }
 

@@ -78,8 +78,22 @@ static class PowerActions
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern int SHQueryRecycleBin(string? root, ref ShQueryRbInfo info);
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern int SHEmptyRecycleBin(IntPtr hwnd, string? root, uint flags);
 
-    /// Items and bytes in the Recycle Bins of all drives.
-    public static object RecycleBin()
+    static Task<object>? recycleQuery;
+    static long recycleQueriedAt;
+
+    /// Items and bytes in the Recycle Bins of all drives. Looking through every drive can take a
+    /// while, so it's done off the UI thread, and widgets asking together share one answer.
+    /// Called on the UI thread.
+    public static Task<object> RecycleBinAsync()
+    {
+        long now = Environment.TickCount64;
+        if (recycleQuery is { } q && (!q.IsCompleted || (q.IsCompletedSuccessfully && now - recycleQueriedAt < 2000)))
+            return q;
+        recycleQueriedAt = now;
+        return recycleQuery = Task.Run(RecycleBin);
+    }
+
+    static object RecycleBin()
     {
         var info = new ShQueryRbInfo { cbSize = Marshal.SizeOf<ShQueryRbInfo>() };
         int hr = SHQueryRecycleBin(null, ref info);
@@ -97,7 +111,8 @@ static class PowerActions
             int hr = await Task.Run(() => SHEmptyRecycleBin(IntPtr.Zero, null, 1 | 2 | 4));
             if (hr != 0 && hr != unchecked((int)0x8000FFFF)) throw new BridgeException($"could not empty the Recycle Bin (0x{hr:x8})");
         }
-        return RecycleBin();
+        recycleQuery = null; // what was read before is out of date
+        return await RecycleBinAsync();
     }
 
     public static void OpenRecycleBin() =>

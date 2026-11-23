@@ -123,7 +123,7 @@ sealed class WidgetBridge(App app)
             }
 
             // built-in widgets only: these change the PC or delete files for good
-            case "recycle.query": RequireBuiltin(w); return PowerActions.RecycleBin();
+            case "recycle.query": RequireBuiltin(w); return await PowerActions.RecycleBinAsync();
             case "recycle.empty": RequireBuiltin(w); return await PowerActions.EmptyRecycleBinAsync();
             case "recycle.open": RequireBuiltin(w); PowerActions.OpenRecycleBin(); return null;
             case "power.do": RequireBuiltin(w); PowerActions.Do(Req(p, "action")); return null;

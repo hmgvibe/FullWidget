@@ -56,6 +56,8 @@ const PHRASES = [
   ["毛玻璃會模糊後面的桌布。", "毛玻璃会模糊后面的壁纸。", "Frosted blurs the wallpaper behind it."],
   ["陰影", "阴影", "Shadow"],
   ["只在透明卡片上顯示。", "只在透明卡片上显示。", "Shown on clear cards only."],
+  ["毛玻璃卡片的陰影由系統決定。", "毛玻璃卡片的阴影由系统决定。", "Windows draws the shadow of a frosted card."],
+  ["毛玻璃卡片的圓角由系統決定。", "毛玻璃卡片的圆角由系统决定。", "Windows draws the corners of a frosted card."],
   ["顏色", "颜色", "Color"],
   ["背景顏色", "背景颜色", "Background"],
   ["背景不透明度", "背景不透明度", "Background opacity"],

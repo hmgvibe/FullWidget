@@ -129,7 +129,7 @@ const instThemeName = (i) => (i.themeId ? themeName(i.themeId) : t("跟隨全局
 const LOOK = [
   { group: "風格" },
   { key: "style", label: "卡片", type: "seg", options: [["transparent", "透明"], ["frosted", "毛玻璃"]], desc: "毛玻璃會模糊後面的桌布。" },
-  { key: "shadow", label: "陰影", type: "toggle", desc: "只在透明卡片上顯示。" },
+  { key: "shadow", label: "陰影", type: "toggle", desc: "只在透明卡片上顯示。", frosted: "毛玻璃卡片的陰影由系統決定。" },
   { group: "顏色" },
   { key: "background", label: "背景顏色", type: "color" },
   { key: "backgroundOpacity", label: "背景不透明度", type: "range", min: 0, max: 1, step: 0.01, pct: true },
@@ -139,7 +139,7 @@ const LOOK = [
   { key: "fontFamily", label: "字體", type: "font" },
   { key: "fontScale", label: "字號", type: "range", min: 0.7, max: 1.6, step: 0.05, pct: true },
   { group: "形狀" },
-  { key: "radius", label: "圓角", type: "range", min: 0, max: 32, step: 1, unit: "px" },
+  { key: "radius", label: "圓角", type: "range", min: 0, max: 32, step: 1, unit: "px", frosted: "毛玻璃卡片的圓角由系統決定。" },
   { key: "padding", label: "內距", type: "range", min: 0, max: 40, step: 1, unit: "px" },
   { key: "opacity", label: "整體不透明度", type: "range", min: 0.3, max: 1, step: 0.01, pct: true },
 ];
@@ -207,9 +207,9 @@ function toHex(v) {
 }
 
 function row(label, desc, ctl, opts = {}) {
-  return `<div class="row${opts.tall ? " tall" : ""}" data-key="row-${esc(opts.key || label)}">
+  return `<div class="row${opts.tall ? " tall" : ""}${opts.off ? " off" : ""}" data-key="row-${esc(opts.key || label)}">
     <div class="lab">${esc(t(label))}${opts.mark ? `<span class="mark" title="${esc(t("已自訂"))}"></span>` : ""}${desc ? `<small>${esc(t(desc))}</small>` : ""}</div>
-    <div class="ctl${opts.stack ? " stack" : ""}">${ctl}${opts.reset ? `<button class="link" data-act="reset" ${opts.reset}>${t("重設")}</button>` : ""}</div>
+    <div class="ctl${opts.stack ? " stack" : ""}"${opts.off ? " inert" : ""}>${ctl}${opts.reset ? `<button class="link" data-act="reset" ${opts.reset}>${t("重設")}</button>` : ""}</div>
   </div>`;
 }
 
@@ -219,8 +219,10 @@ function lookForm(look, overrides, scope) {
   for (const f of LOOK) {
     if (f.group) { html += `<div class="group-title">${t(f.group)}</div>`; continue; }
     const set = Object.prototype.hasOwnProperty.call(overrides || {}, f.key);
-    html += row(f.label, f.desc, control(f, look[f.key], scope), {
-      key: f.key, mark: set, reset: set ? at(scope, f.key) : "", tall: false,
+    // on a frosted card Windows draws the corners and the shadow: these have nothing to change
+    const off = !!f.frosted && look.style === "frosted";
+    html += row(f.label, off ? f.frosted : f.desc, control(f, look[f.key], scope), {
+      key: f.key, mark: set, reset: set ? at(scope, f.key) : "", tall: false, off,
     });
   }
   return html;

@@ -177,6 +177,11 @@ sealed class App : ApplicationContext
                 return;
             }
 
+            // WebView2 loads this the first time a screen reader or similar looks at a page, and
+            // the whole app goes down if that fails (FullWidget#6). Load it from System32 now.
+            if (Native.Win32.LoadLibraryEx("UIAutomationCore.dll", IntPtr.Zero, Native.Win32.LOAD_LIBRARY_SEARCH_SYSTEM32) == IntPtr.Zero)
+                Log.Warn($"UIAutomationCore.dll could not be loaded (error {System.Runtime.InteropServices.Marshal.GetLastWin32Error()})");
+
             // One environment for all widgets. --process-per-site lets every widget share one
             // renderer process, since they all live under *.widgets.local.
             LowResourceActive = Config.Data.LowResourceMode;
