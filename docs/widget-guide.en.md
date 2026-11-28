@@ -576,7 +576,7 @@ Add `"grow": 1` to `size` in `widget.json`, and when the user makes the card big
 /* one particular theme */
 html[data-theme="paper"] .quote { font-style: italic; }
 
-/* the user picked frosted cards */
+/* the user picked frosted cards (data-style is transparent, frosted, or snapshot: experimental) */
 html[data-style="frosted"] .quote { letter-spacing: 0.02em; }
 
 /* the widget is locked */

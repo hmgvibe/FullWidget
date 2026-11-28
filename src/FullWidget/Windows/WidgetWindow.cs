@@ -293,6 +293,17 @@ sealed class WidgetWindow : NativeWindow
 
     bool wasFrosted;
 
+    /// The snapshot card's first picture was asked for: asked once only, so a picture that can't
+    /// be taken (Windows too old, say) isn't asked for again and again. "Retake" still works.
+    bool backdropAsked;
+
+    void AskBackdropIfMissing(Dictionary<string, JsonElement> look)
+    {
+        if (backdropAsked || Appearance.Style(look) != "snapshot" || Backdrop.Version(Cfg.Id) != null) return;
+        backdropAsked = true;
+        app.BackdropSoon(this);
+    }
+
     /// Re-reads appearance (after a theme or instance change) and updates window and page.
     public void ApplyAppearance()
     {
@@ -307,7 +318,7 @@ sealed class WidgetWindow : NativeWindow
         }
         Send("appearance", AppearancePayload());
         // just switched to the snapshot card: it needs its first picture
-        if (Appearance.Style(look) == "snapshot" && Backdrop.Version(Cfg.Id) == null) app.BackdropSoon(this);
+        AskBackdropIfMissing(look);
     }
 
     void ApplyClickThrough()
@@ -949,7 +960,7 @@ sealed class WidgetWindow : NativeWindow
     {
         pageReady = true;
         // a snapshot card without its picture yet (set up that way, or the picture was deleted)
-        if (Appearance.Style(Appearance.Effective(app.Config.Data, Cfg)) == "snapshot" && Backdrop.Version(Cfg.Id) == null) app.BackdropSoon(this);
+        AskBackdropIfMissing(Appearance.Effective(app.Config.Data, Cfg));
         // called up before the page had loaded (a note just added by the shortcut)
         if (peeking) { controller?.MoveFocus(CoreWebView2MoveFocusReason.Programmatic); Send("summon", null); }
     }

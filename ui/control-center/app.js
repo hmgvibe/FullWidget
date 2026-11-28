@@ -129,7 +129,7 @@ const instThemeName = (i) => (i.themeId ? themeName(i.themeId) : t("跟隨全局
 const LOOK = [
   { group: "風格" },
   { key: "style", label: "卡片", type: "seg", options: [["transparent", "透明"], ["frosted", "毛玻璃"], ["snapshot", "快照"]], desc: "毛玻璃會模糊後面的桌布。" },
-  { key: "shadow", label: "陰影", type: "toggle", desc: "只在透明卡片上顯示。", frosted: "毛玻璃卡片的陰影由系統決定。" },
+  { key: "shadow", label: "陰影", type: "toggle", desc: "透明和快照卡片才有。", frosted: "毛玻璃卡片的陰影由系統決定。" },
   { group: "顏色" },
   { key: "background", label: "背景顏色", type: "color" },
   { key: "backgroundOpacity", label: "背景不透明度", type: "range", min: 0, max: 1, step: 0.01, pct: true },

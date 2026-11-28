@@ -59,7 +59,7 @@ const PHRASES = [
   ["實驗功能：截一次組件後面的畫面，模糊後當作背景，不會自動更新。移動組件或換桌布後，再按一次「重新截取」。", "实验功能：截一次组件后面的画面，模糊后当作背景，不会自动更新。移动组件或换壁纸后，再按一次“重新截取”。", "Experimental: takes one blurred picture of what is behind the widget as its background; it doesn't update by itself. After moving the widget or changing the wallpaper, click Retake."],
   ["重新截取", "重新截取", "Retake"],
   ["陰影", "阴影", "Shadow"],
-  ["只在透明卡片上顯示。", "只在透明卡片上显示。", "Shown on clear cards only."],
+  ["透明和快照卡片才有。", "透明和快照卡片才有。", "On clear and snapshot cards."],
   ["毛玻璃卡片的陰影由系統決定。", "毛玻璃卡片的阴影由系统决定。", "Windows draws the shadow of a frosted card."],
   ["毛玻璃卡片的圓角由系統決定。", "毛玻璃卡片的圆角由系统决定。", "Windows draws the corners of a frosted card."],
   ["顏色", "颜色", "Color"],
