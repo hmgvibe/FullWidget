@@ -428,14 +428,24 @@ sealed class WidgetWindow : NativeWindow
         }
     }
 
-    /// Puts the window directly above the desktop: under every app window.
+    /// Puts the window under every app window, on top of the other desktop-layer widgets. Never
+    /// at the bottom of them: the widgets would keep changing places, and a widget's shadow falls
+    /// on whatever is under it (FullWidget#11).
     void PlaceAboveDesktop()
     {
         var progman = FindWindow("Progman", null);
         if (progman == IntPtr.Zero) return;
+        // the lowest window above the desktop that isn't one of our desktop-layer widgets
         var above = GetWindow(progman, GW_HWNDPREV);
-        if (above == IntPtr.Zero || above == Handle) return;
-        MoveInOrder(above);
+        while (above != IntPtr.Zero && IsDesktopWidget(above, progman)) above = GetWindow(above, GW_HWNDPREV);
+        MoveInOrder(above == IntPtr.Zero ? HWND_TOP : above);
+    }
+
+    static bool IsDesktopWidget(IntPtr hwnd, IntPtr progman)
+    {
+        if (GetWindow(hwnd, GW_OWNER) != progman) return false;
+        GetWindowThreadProcessId(hwnd, out uint pid);
+        return pid == Environment.ProcessId;
     }
 
     /// Our own change of stacking order: the one kind a press on the widget doesn't hold back.

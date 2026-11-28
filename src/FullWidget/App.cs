@@ -69,7 +69,8 @@ sealed class App : ApplicationContext
         showDesktop = new Shell.ShowDesktop(shown =>
         {
             Log.Info(shown ? "Show desktop: widgets on top" : "Show desktop over: widgets back above the desktop");
-            foreach (var w in windows.Values) w.SettleDesktopLayer();
+            // from the bottom up: each one goes on top of the ones before, so the order stays
+            foreach (var w in BottomUp(windows.Values)) w.SettleDesktopLayer();
         });
         fullscreenWatch.Tick += (_, _) => { WatchFullscreen(); showDesktop.Check(); };
         fullscreenWatch.Start();
@@ -104,6 +105,18 @@ sealed class App : ApplicationContext
 
     /// Show desktop (Win+D) has the desktop in front of every app: desktop-layer widgets go on top.
     public bool DesktopShown => showDesktop?.Shown == true;
+
+    /// The widgets in their stacking order on screen, lowest first.
+    static List<WidgetWindow> BottomUp(IEnumerable<WidgetWindow> all)
+    {
+        var byHandle = all.Where(w => w.Handle != IntPtr.Zero).ToDictionary(w => w.Handle);
+        var order = new List<WidgetWindow>();
+        for (var h = Native.Win32.GetTopWindow(IntPtr.Zero); h != IntPtr.Zero; h = Native.Win32.GetWindow(h, 2 /* GW_HWNDNEXT */))
+            if (byHandle.Remove(h, out var w)) order.Add(w);
+        order.Reverse();
+        order.AddRange(byHandle.Values);
+        return order;
+    }
     Rectangle? fullscreen;
     static readonly HashSet<string> ShellClasses = new() { "Progman", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd" };
 
