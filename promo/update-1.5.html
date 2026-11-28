@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>FullWidget 1.5 cover</title>
+  <!-- The 1.5 update cover (Simplified Chinese): the same dark widget wall as the 1.3 and 1.4 covers,
+       with the snapshot card as the hero: a little desktop, and a clock card whose background is a
+       blurred picture of what is behind it, with its corner and shadow controls.
+       update-1.5.html?ar=16x9|4x3 (1920×1080 or 1440×1080).
+       Render: node promo/render.mjs --cover update-1.5.html → promo/out/update-1.5-cover-<ar>.zh-CN.jpg -->
+  <link rel="stylesheet" href="promo.css">
+  <style>
+    html, body { margin: 0; background: var(--dark); overflow: hidden; }
+    #c { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--dark); }
+    .r43 #c { width: 1440px; }
+
+    /* the wall of real widgets, dimmed, behind everything */
+    .wall { position: absolute; inset: -80px -60px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 24px; transform: rotate(-8deg) scale(1.1); transform-origin: 60% 50%; opacity: 0.34; }
+    .r43 .wall { grid-template-columns: repeat(6, 1fr); }
+    .wall div { padding: 16px; border-radius: 22px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07); background: rgba(255, 255, 255, 0.03); }
+    .wall img { width: 100%; height: auto; display: block; }
+    .shade { position: absolute; inset: 0; background:
+      radial-gradient(55% 65% at 74% 50%, rgba(125, 200, 255, 0.14), transparent 70%),
+      linear-gradient(90deg, rgba(14, 16, 19, 0.98) 0%, rgba(14, 16, 19, 0.93) 40%, rgba(14, 16, 19, 0.74) 62%, rgba(14, 16, 19, 0.62) 100%); }
+
+    .brand { position: absolute; left: 116px; top: 104px; display: flex; align-items: center; gap: 20px; font: 700 50px/1 var(--display); letter-spacing: -0.03em; color: #fff; }
+    .brand img { width: 68px; height: 68px; }
+    .h { position: absolute; left: 106px; top: 236px; font: 800 236px/0.9 var(--display); letter-spacing: -0.05em; color: #fff; white-space: nowrap; }
+    .h em { font-style: normal; background: linear-gradient(90deg, #4cc9f0, #9b5de5 50%, #f2b45c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .h small { font-size: 112px; letter-spacing: -0.02em; margin-left: 18px; }
+    .s { position: absolute; left: 116px; top: 500px; font: 600 46px/1.3 var(--sans); color: var(--on-dark); white-space: nowrap; }
+    .list { position: absolute; left: 116px; top: 600px; display: grid; grid-template-columns: auto auto; gap: 18px 18px; }
+    .list b { font: 700 36px/1 var(--sans); padding: 20px 30px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); white-space: nowrap; }
+    .list b.hot { background: #7dc8ff; color: #0a1622; box-shadow: none; }
+    .mem { position: absolute; left: 116px; top: 836px; padding: 24px 34px; border-radius: 26px; background: var(--mint); color: #0b1512; font: 800 40px/1 var(--sans); white-space: nowrap; }
+
+    /* the hero: a little desktop with a snapshot card on it */
+    .scene { position: absolute; left: 990px; top: 150px; width: 860px; height: 590px; border-radius: 34px; overflow: hidden; transform: rotate(-2.5deg); transform-origin: 0 0;
+      box-shadow: 0 60px 90px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08); }
+    .wp { position: absolute; left: 0; top: 0; width: 860px; height: 590px;
+      background:
+        radial-gradient(38% 46% at 18% 30%, #ff8a5c, transparent 70%),
+        radial-gradient(42% 52% at 88% 18%, #8a5cff, transparent 70%),
+        radial-gradient(48% 58% at 62% 94%, #1fc8b0, transparent 70%),
+        linear-gradient(160deg, #182640, #223f62); }
+    .win { position: absolute; left: 430px; top: 70px; width: 360px; height: 270px; border-radius: 16px; overflow: hidden; background: #f6f5f1; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6); }
+    .win .bar { height: 42px; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: #e8e6e0; }
+    .win .bar i { width: 13px; height: 13px; border-radius: 50%; background: #cfccc4; }
+    .win .bar i:first-child { background: #ff7a6b; }
+    .win p { margin: 24px 28px 0; height: 13px; border-radius: 7px; background: #dad7cf; }
+    .win p.short { width: 55%; } .win p.hl { width: 40%; background: #ffd166; }
+
+    .card { position: absolute; left: 250px; top: 220px; width: 400px; height: 240px; border-radius: 34px; overflow: hidden; color: #eef1f4;
+      box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.6), 0 6px 14px rgba(0, 0, 0, 0.3); }
+    .card .snap { position: absolute; left: -250px; top: -220px; width: 860px; height: 590px; filter: blur(22px) saturate(1.15); }
+    .card .tint { position: absolute; inset: 0; background: rgba(16, 18, 22, 0.32); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.12); border-radius: inherit; }
+    .card .face { position: absolute; inset: 0; padding: 28px 34px; display: flex; flex-direction: column; justify-content: space-between; }
+    .card small { font: 600 22px/1 var(--sans); color: rgba(238, 241, 244, 0.75); }
+    .card b { font: 300 104px/1 var(--display); letter-spacing: -0.03em; }
+    .card .row { display: flex; justify-content: space-between; font: 20px/1 var(--sans); color: rgba(238, 241, 244, 0.6); }
+
+    .ctl { position: absolute; left: 1150px; top: 800px; display: flex; align-items: center; gap: 22px; padding: 22px 32px; border-radius: 24px; background: #1b1f26; transform: rotate(-1.5deg);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), 0 40px 60px -20px rgba(0, 0, 0, 0.85); font: 700 30px/1 var(--sans); color: #fff; white-space: nowrap; }
+    .ctl .lab { color: #9aa3ad; }
+    .ctl .rail { position: relative; width: 190px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.14); }
+    .ctl .rail i { position: absolute; left: 0; top: 0; bottom: 0; width: 78%; border-radius: 4px; background: #7dc8ff; }
+    .ctl .rail b { position: absolute; left: 78%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; background: #fff; }
+    .ctl .val { font: 700 28px/1 var(--mono); }
+    .ctl .gap { width: 1px; height: 36px; background: rgba(255, 255, 255, 0.12); }
+    .ctl .tgl { position: relative; width: 66px; height: 38px; border-radius: 99px; background: #7de2c4; }
+    .ctl .tgl::after { content: ""; position: absolute; top: 5px; left: 33px; width: 28px; height: 28px; border-radius: 50%; background: #0b1512; }
+
+    .ribbon { position: absolute; left: 1440px; top: 98px; font: 700 30px/1 var(--sans); color: #0b1512; background: #fff; padding: 14px 22px; border-radius: 999px; box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5); white-space: nowrap; transform: rotate(3deg); }
+    .ribbon i { font-style: normal; color: #2a7fc0; }
+
+    /* 4:3: the words on the left, the hero smaller below right */
+    .r43 .brand { left: 84px; top: 76px; }
+    .r43 .h { left: 76px; top: 190px; font-size: 210px; }
+    .r43 .h small { font-size: 100px; }
+    .r43 .s { left: 86px; top: 424px; font-size: 40px; }
+    .r43 .list { left: 86px; top: 530px; grid-template-columns: auto; gap: 16px; }
+    .r43 .list b { font-size: 32px; padding: 18px 26px; justify-self: start; }
+    .r43 .mem { left: 86px; top: 920px; font-size: 36px; padding: 22px 30px; }
+    .r43 .scene { left: 720px; top: 470px; transform: rotate(-2.5deg) scale(0.74); }
+    .r43 .ribbon { left: 1010px; top: 380px; font-size: 26px; }
+    .r43 .ctl { left: 820px; top: 930px; font-size: 26px; padding: 18px 26px; gap: 18px; }
+    .r43 .ctl .rail { width: 150px; }
+  </style>
+</head>
+<body>
+  <div id="c">
+    <div class="wall" id="wall"></div>
+    <div class="shade"></div>
+
+    <div class="brand"><img src="../build/logo/logo.svg" alt="">FullWidget</div>
+    <div class="h"><em>1.5</em><small>更新了</small></div>
+    <div class="s">免费、开源的 Windows 11 桌面小组件</div>
+    <div class="list"><b class="hot">🪟 快照卡片</b><b>🌗 阴影听你的</b><b>🧱 叠放顺序不变</b><b>🖱️ 右键菜单更清爽</b></div>
+    <div class="mem">卡片的样子，由你决定</div>
+
+    <div class="scene" id="scene">
+      <div class="card"><div class="snap" id="snap"></div><div class="tint"></div>
+        <div class="face"><small>11月3日 周二</small><b>09:41</b><div class="row"><span>第 307 天</span><span>第 45 周</span></div></div></div>
+    </div>
+    <div class="ribbon">实验功能 · <i>快照卡片</i></div>
+    <div class="ctl"><span class="lab">圆角</span><span class="rail"><i></i><b></b></span><span class="val">30px</span><span class="gap"></span><span class="lab">阴影</span><span class="tgl"></span></div>
+  </div>
+  <script>window.__errs = []; addEventListener("error", (e) => window.__errs.push(`${e.message} (${(e.filename || "").split("/").pop()}:${e.lineno})`));</script>
+  <script>
+    if (new URLSearchParams(location.search).get("ar") === "4x3") document.documentElement.classList.add("r43");
+
+    const wall = document.getElementById("wall");
+    ["clock", "weather", "sysinfo", "calendar", "todo", "flipclock", "forecast", "usage", "pomodoro", "currency", "analogclock",
+      "netspeed", "worldclock", "habits", "airquality", "whitenoise", "calculator", "timer", "rss", "sunmoon", "countdown",
+      "disks", "pcinfo", "battery", "progress", "dailyimage", "onthisday", "photoframe"]
+      .forEach((f) => { const d = document.createElement("div"); d.innerHTML = `<img src="../site/assets/widgets/${f}/instrument.zh-CN.webp" onerror="this.parentNode.remove()">`; wall.append(d); });
+
+    // the desktop, drawn twice: on the scene, and blurred inside the card (its snapshot)
+    const desktop = `<div class="wp"></div><div class="win"><div class="bar"><i></i><i></i><i></i></div><p></p><p class="short"></p><p class="hl"></p><p></p><p class="short"></p></div>`;
+    document.getElementById("scene").insertAdjacentHTML("afterbegin", desktop);
+    document.getElementById("snap").innerHTML = desktop;
+
+    const images = Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; })));
+    window.PROMO_ASSET = images.then(() => document.fonts.ready).then(() => new Promise((r) => setTimeout(() => r(true), 300)));
+  </script>
+</body>
+</html>
