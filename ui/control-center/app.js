@@ -128,7 +128,7 @@ const instThemeName = (i) => (i.themeId ? themeName(i.themeId) : t("跟隨全局
 /** Appearance fields, shared by a widget's 外觀 tab and the global tweaks on the 主題 page. */
 const LOOK = [
   { group: "風格" },
-  { key: "style", label: "卡片", type: "seg", options: [["transparent", "透明"], ["frosted", "毛玻璃"]], desc: "毛玻璃會模糊後面的桌布。" },
+  { key: "style", label: "卡片", type: "seg", options: [["transparent", "透明"], ["frosted", "毛玻璃"], ["snapshot", "快照"]], desc: "毛玻璃會模糊後面的桌布。" },
   { key: "shadow", label: "陰影", type: "toggle", desc: "只在透明卡片上顯示。", frosted: "毛玻璃卡片的陰影由系統決定。" },
   { group: "顏色" },
   { key: "background", label: "背景顏色", type: "color" },
@@ -224,6 +224,10 @@ function lookForm(look, overrides, scope) {
     html += row(f.label, off ? f.frosted : f.desc, control(f, look[f.key], scope), {
       key: f.key, mark: set, reset: set ? at(scope, f.key) : "", tall: false, off,
     });
+    if (f.key === "style" && look.style === "snapshot") {
+      html += row("背景快照", "實驗功能：截一次組件後面的畫面，模糊後當作背景，不會自動更新。移動組件或換桌布後，再按一次「重新截取」。",
+        `<button class="btn small" data-action="${scope === "look" ? "backdrop" : "backdropAll"}">${t("重新截取")}</button>`, { key: "backdrop" });
+    }
   }
   return html;
 }
@@ -1180,6 +1184,8 @@ function onAction(a) {
     }
     case "tab": ui.tab = a.dataset.tab; remember(); render(); break;
     case "identify": api("instance.identify", { id }); break;
+    case "backdrop": api("instance.backdrop", { id }); break;
+    case "backdropAll": api("theme.backdrops"); break;
     case "reload": api("instance.reload", { id }).then(() => toast(t("已重新載入"))); break;
     case "duplicate":
       api("instance.duplicate", { id }).then((r) => { ui.sel = r.id; remember(); toast(t("已複製一份，放在桌面的空位")); });

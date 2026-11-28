@@ -48,6 +48,9 @@ static class Strings
     public static string Layer => T("層級", "层级", "Layer");
     public static string StyleTransparent => T("透明", "透明", "Clear");
     public static string StyleFrosted => T("毛玻璃", "毛玻璃", "Frosted");
+    public static string StyleSnapshot => T("快照", "快照", "Snapshot");
+    public static string RetakeBackdrop => T("重新截取背景", "重新截取背景", "Retake the background");
+    public static string BackdropUnsupported => T("這台電腦的 Windows 太舊，快照卡片需要 Windows 10 2004 或更新版本。", "这台电脑的 Windows 太旧，快照卡片需要 Windows 10 2004 或更新版本。", "The snapshot card needs Windows 10 2004 or later.");
     public static string Shadow => T("陰影", "阴影", "Shadow");
     public static string ClickThrough => T("滑鼠穿透", "鼠标穿透", "Click-through");
     public static string Reload => T("重新載入", "重新加载", "Reload");

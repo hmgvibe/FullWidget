@@ -353,6 +353,7 @@ sealed class App : ApplicationContext
         Notifier.Cancel(inst.Id, null);
         Config.Data.Instances.Remove(inst);
         Storage.DeleteInstance(inst.Id);
+        Backdrop.Delete(inst.Id);
         Config.SaveSoon();
         Trim.Soon();
         Log.Info($"Removed {inst.Id}");
@@ -496,6 +497,47 @@ sealed class App : ApplicationContext
         Config.SaveSoon();
     }
 
+    readonly HashSet<WidgetWindow> backdropQueue = new();
+    System.Windows.Forms.Timer? backdropTimer;
+    bool backdropBusy;
+
+    /// Takes this snapshot card's picture in a moment (once the window has settled).
+    public void BackdropSoon(WidgetWindow w)
+    {
+        backdropQueue.Add(w);
+        if (backdropTimer == null)
+        {
+            backdropTimer = new System.Windows.Forms.Timer { Interval = 400 };
+            backdropTimer.Tick += (_, _) =>
+            {
+                backdropTimer!.Stop();
+                var list = backdropQueue.ToList();
+                backdropQueue.Clear();
+                RefreshBackdrops(list);
+            };
+        }
+        backdropTimer.Stop();
+        backdropTimer.Start();
+    }
+
+    /// Takes the picture behind snapshot-card widgets again: these, or all of them (null).
+    public async void RefreshBackdrops(IEnumerable<WidgetWindow>? which = null)
+    {
+        var list = (which ?? Windows.Where(w => Appearance.Style(Appearance.Effective(Config.Data, w.Cfg)) == "snapshot"))
+            .Where(w => windows.ContainsValue(w) && !w.IsHidden && w.Handle != IntPtr.Zero).Distinct().ToList();
+        if (list.Count == 0) return;
+        if (backdropBusy) { foreach (var w in list) BackdropSoon(w); return; }
+        backdropBusy = true;
+        try
+        {
+            if (!await Backdrop.CaptureAsync(list.Select(w => (w.Cfg.Id, w.WindowRect())).ToList()))
+                tray.Balloon(Strings.BackdropUnsupported);
+            foreach (var w in list.Where(w => windows.ContainsValue(w))) w.ApplyAppearance();
+        }
+        catch (Exception ex) { Log.Error("Snapshot card: taking the picture failed", ex); }
+        finally { backdropBusy = false; }
+    }
+
     public void SetCustomCss(WidgetWindow w, string? css)
     {
         w.Cfg.CustomCss = string.IsNullOrWhiteSpace(css) ? null : css;
@@ -509,15 +551,30 @@ sealed class App : ApplicationContext
         if (!Appearance.Defaults.ContainsKey(key)) throw new BridgeException($"unknown appearance key '{key}'");
         if (value == null) Config.Data.Theme.Remove(key);
         else Config.Data.Theme[key] = value.Value.Clone();
+        FollowGlobal(new[] { key });
         foreach (var w in Windows) w.ApplyAppearance();
         Config.SaveSoon();
     }
 
     public void ResetThemeOverrides()
     {
+        var keys = Config.Data.Theme.Keys.ToList();
         Config.Data.Theme.Clear();
+        FollowGlobal(keys);
         foreach (var w in Windows) w.ApplyAppearance();
         Config.SaveSoon();
+    }
+
+    /// A global tweak is for every widget on the global theme: the value a widget was given for
+    /// that same key goes, so they all follow it again. A change on one widget lasts until the
+    /// next global change of that key; its other keys, and widgets with a theme of their own,
+    /// stay as they are.
+    void FollowGlobal(IEnumerable<string> keys)
+    {
+        var global = Themes.Get(Config.Data.ThemeId).Id;
+        foreach (var inst in Config.Data.Instances)
+            if (inst.ThemeId == null || Themes.Get(inst.ThemeId).Id == global)
+                foreach (var k in keys) inst.Appearance.Remove(k);
     }
 
     public void SetSetting(WidgetWindow w, string key, JsonElement value)
@@ -1035,6 +1092,7 @@ sealed class App : ApplicationContext
                 case "clickthrough": SetClickThrough(Target(), Arg(2) == "on"); break;
                 case "style": SetAppearance(Target(), "style", Arg(2)); break;
                 case "shadow": SetAppearance(Target(), "shadow", Arg(2) == "on"); break;
+                case "backdrop": RefreshBackdrops(a.Length > 1 ? new[] { Target() } : null); break; // retake snapshot-card pictures
                 case "move": Target().MoveCardTo(int.Parse(Arg(2)), int.Parse(Arg(3))); break;
                 case "size": Target().SetSizeDip(double.Parse(Arg(2), CultureInfo.InvariantCulture), double.Parse(Arg(3), CultureInfo.InvariantCulture)); break;
                 case "lock-all": SetAllLocked(true); break;

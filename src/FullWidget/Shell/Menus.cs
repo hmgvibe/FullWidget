@@ -18,7 +18,8 @@ static class Menus
     {
         var cfg = app.Config.Data;
         var look = Appearance.Effective(cfg, w.Cfg);
-        bool frosted = Appearance.Style(look) == "frosted";
+        string style = Appearance.Style(look);
+        bool frosted = style == "frosted";
         bool shadow = Appearance.Shadow(look);
         string layer = w.Cfg.Layer is "top" or "normal" ? w.Cfg.Layer : "desktop";
         string theme = w.Cfg.ThemeId == null ? Strings.FollowGlobalShort : Themes.Get(w.Cfg.ThemeId).DisplayName;
@@ -38,15 +39,19 @@ static class Menus
             Toggle(Strings.Lock, w.Cfg.Locked, () => app.SetLocked(w, !w.Cfg.Locked)),
             Toggle(Strings.ClickThrough, w.Cfg.ClickThrough, () => app.SetClickThrough(w, !w.Cfg.ClickThrough)),
             Seg(Strings.Layer, layer, Layers, v => app.SetLayer(w, v)),
-            Seg(Strings.Card, frosted ? "frosted" : "transparent",
-                new[] { ("transparent", Strings.StyleTransparent), ("frosted", Strings.StyleFrosted) },
+            Seg(Strings.Card, style,
+                new[] { ("transparent", Strings.StyleTransparent), ("frosted", Strings.StyleFrosted), ("snapshot", Strings.StyleSnapshot) },
                 v => app.SetAppearance(w, "style", v)),
             Toggle(Strings.Shadow, shadow, () => app.SetAppearance(w, "shadow", !shadow), disabled: frosted),
             Sub(Strings.Theme, theme, themes),
+        };
+        if (style == "snapshot") items.Add(Item(Strings.RetakeBackdrop, () => app.RefreshBackdrops(new[] { w })));
+        items.AddRange(new List<PopItem>
+        {
             Sep,
             Item(Strings.Locate, w.Identify),
             Item(Strings.Reload, w.Reload),
-        };
+        });
         if (cfg.DeveloperMode) items.Add(Item(Strings.DevTools, w.OpenDevTools));
         items.Add(Sep);
         items.Add(Item(Strings.TurnOff, () => app.SetOff(w.Cfg, true)));

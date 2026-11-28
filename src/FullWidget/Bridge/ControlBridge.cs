@@ -186,6 +186,7 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
             case "instance.size": Win().SetSizeDip(Num(p, "width") ?? Inst().Width, Num(p, "height") ?? Inst().Height); break;
             case "instance.reload": Win().Reload(); break;
             case "instance.identify": Win().Identify(); break;
+            case "instance.backdrop": app.RefreshBackdrops(new[] { Win() }); break;
             case "instance.devtools": Win().OpenDevTools(); break;
             case "instance.remove": app.Remove(Inst()); break;
             case "instance.off": app.SetOff(Inst(), On()); break;
@@ -250,6 +251,7 @@ sealed class ControlBridge(App app, ControlCenter? window = null)
                 break;
             }
             case "theme.reset": app.ResetThemeOverrides(); break;
+            case "theme.backdrops": app.RefreshBackdrops(); break;
 
             case "app.language": app.SetLanguage(Req(p, "lang")); break;
             case "app.autostart":

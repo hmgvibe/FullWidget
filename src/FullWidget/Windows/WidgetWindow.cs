@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using FullWidget.Bridge;
 using FullWidget.Core;
+using FullWidget.Shell;
 using Microsoft.Web.WebView2.Core;
 using static FullWidget.Native.Win32;
 
@@ -305,6 +306,8 @@ sealed class WidgetWindow : NativeWindow
             ApplyClickThrough();
         }
         Send("appearance", AppearancePayload());
+        // just switched to the snapshot card: it needs its first picture
+        if (Appearance.Style(look) == "snapshot" && Backdrop.Version(Cfg.Id) == null) app.BackdropSoon(this);
     }
 
     void ApplyClickThrough()
@@ -752,6 +755,14 @@ sealed class WidgetWindow : NativeWindow
             var rel = Uri.UnescapeDataString(uri.AbsolutePath).TrimStart('/');
             if (rel.StartsWith("__media/cover/", StringComparison.Ordinal)) { ServeCover(e, rel["__media/cover/".Length..]); return; }
             if (rel.StartsWith("__files/", StringComparison.Ordinal)) { ServeFile(e, rel["__files/".Length..], uri.Query); return; }
+            if (rel == "__backdrop.png")
+            {
+                var pic = Backdrop.FileOf(Cfg.Id);
+                e.Response = File.Exists(pic)
+                    ? env.CreateWebResourceResponse(new MemoryStream(File.ReadAllBytes(pic)), 200, "OK", "Content-Type: image/png\nCache-Control: no-cache")
+                    : env.CreateWebResourceResponse(new MemoryStream(), 404, "Not Found", "");
+                return;
+            }
             // /__dw/ is the SDK folder's name from before the rename; widgets may still ask for it.
             bool sdk = rel.StartsWith("__fw/", StringComparison.Ordinal) || rel.StartsWith("__dw/", StringComparison.Ordinal);
             string root = Path.GetFullPath(sdk ? Paths.SdkDir : Manifest.Dir);
@@ -883,16 +894,19 @@ sealed class WidgetWindow : NativeWindow
         return close >= 0 ? html.Insert(close, bottom) : html + bottom;
     }
 
+    /// backdrop: the snapshot card's picture (Shell/Backdrop.cs), or null.
     sealed record AppearanceInfo(string theme, string themeHref, string style, bool shadow, int margin,
-                                 string themeCss, string userCss, Dictionary<string, JsonElement> values);
+                                 string themeCss, string userCss, Dictionary<string, JsonElement> values, string? backdrop);
 
     AppearanceInfo AppearancePayload()
     {
         var look = Appearance.Effective(app.Config.Data, Cfg);
         var (themeCss, userCss) = Appearance.PageCss(app.Config.Data, Cfg);
         var theme = Appearance.ThemeOf(app.Config.Data, Cfg);
-        return new AppearanceInfo(theme.Id, theme.CssHref, Appearance.Style(look), Appearance.Shadow(look),
-            Appearance.MarginDip(look), themeCss, userCss, look);
+        string style = Appearance.Style(look);
+        string? backdrop = style == "snapshot" && Backdrop.Version(Cfg.Id) is long v ? $"/__backdrop.png?v={v}" : null;
+        return new AppearanceInfo(theme.Id, theme.CssHref, style, Appearance.Shadow(look),
+            Appearance.MarginDip(look), themeCss, userCss, look, backdrop);
     }
 
     object BootData(AppearanceInfo a) => new
@@ -934,6 +948,8 @@ sealed class WidgetWindow : NativeWindow
     public void OnPageReady()
     {
         pageReady = true;
+        // a snapshot card without its picture yet (set up that way, or the picture was deleted)
+        if (Appearance.Style(Appearance.Effective(app.Config.Data, Cfg)) == "snapshot" && Backdrop.Version(Cfg.Id) == null) app.BackdropSoon(this);
         // called up before the page had loaded (a note just added by the shortcut)
         if (peeking) { controller?.MoveFocus(CoreWebView2MoveFocusReason.Programmatic); Send("summon", null); }
     }

@@ -78,8 +78,22 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Shadow switched off (the widget's own setting, or the global one): stronger than the theme's
+   :root, so the theme's shadow comes back as soon as it is switched on again. Not "none": the
+   body combines it with an inset border in one box-shadow list. */
+html[data-shadow="off"]:root { --w-shadow: 0 0 0 transparent; }
+
 /* Frosted: the window itself is the blurred, rounded card. */
 html[data-style="frosted"] body { border-radius: 0; box-shadow: none; }
+
+/* Snapshot (experimental): the card colour over a blurred picture of what was behind the window
+   when the picture was taken. The picture covers the whole window, margin included. */
+html[data-style="snapshot"] body {
+  --w-backdrop-inset: calc(var(--w-margin) / var(--w-size-scale) * -1);
+  background:
+    linear-gradient(var(--w-bg), var(--w-bg)),
+    var(--w-backdrop, none) var(--w-backdrop-inset) var(--w-backdrop-inset) / calc(100% - 2 * var(--w-backdrop-inset)) calc(100% - 2 * var(--w-backdrop-inset)) no-repeat;
+}
 
 input, textarea, [contenteditable] { user-select: text; font: inherit; color: inherit; }
 button { font: inherit; color: inherit; }

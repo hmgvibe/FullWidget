@@ -12,7 +12,7 @@
   --text: "Segoe UI Variable Text", "Segoe UI", "Microsoft JhengHei UI", "Microsoft YaHei UI", sans-serif;
   --click: cubic-bezier(0.3, 1.45, 0.5, 1);
   --slide: cubic-bezier(0.22, 1, 0.36, 1);
-  --margin: 14px;
+  --margin: 6px; /* room for the card's 5px slide as it opens */
   --width: 268px;
   color-scheme: dark;
 }
@@ -34,7 +34,7 @@ body.up .wrap { justify-content: flex-end; }
   padding: 5px;
   border-radius: 12px;
   background: var(--bg);
-  box-shadow: 0 0 0 1px var(--line), 0 14px 30px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 1px var(--line); /* no drop shadow: it would fall on the widgets under the menu */
   opacity: 0;
   transform: translateY(-5px) scale(0.98);
   transform-origin: top left;

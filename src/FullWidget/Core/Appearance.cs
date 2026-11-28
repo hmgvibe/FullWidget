@@ -11,7 +11,7 @@ static class Appearance
 {
     public static readonly Dictionary<string, JsonElement> Defaults = new()
     {
-        ["style"] = Json.Element("transparent"),   // transparent | frosted
+        ["style"] = Json.Element("transparent"),   // transparent | frosted | snapshot (experimental, see Shell/Backdrop.cs)
         ["background"] = Json.Element("#161822"),
         ["backgroundOpacity"] = Json.Element(0.62),
         ["textColor"] = Json.Element("#ffffff"),
@@ -73,9 +73,10 @@ static class Appearance
         return (theme, user);
     }
 
-    public static string Style(Dictionary<string, JsonElement> a) => Str(a, "style") == "frosted" ? "frosted" : "transparent";
+    public static string Style(Dictionary<string, JsonElement> a) => Str(a, "style") switch { "frosted" => "frosted", "snapshot" => "snapshot", _ => "transparent" };
     public static bool Shadow(Dictionary<string, JsonElement> a) => a.TryGetValue("shadow", out var v) && v.ValueKind == JsonValueKind.True;
-    public static int MarginDip(Dictionary<string, JsonElement> a) => Style(a) == "transparent" && Shadow(a) ? ShadowMarginDip : 0;
+    /// The snapshot card is drawn by the page like the clear one, CSS shadow included.
+    public static int MarginDip(Dictionary<string, JsonElement> a) => Style(a) != "frosted" && Shadow(a) ? ShadowMarginDip : 0;
 
     /// Tint for the frosted (blur) backdrop, in the ABGR format the accent API wants.
     public static uint FrostedTint(Dictionary<string, JsonElement> a)
@@ -100,10 +101,10 @@ static class Appearance
         if (layer.ContainsKey("background") || layer.ContainsKey("backgroundOpacity") || layer.ContainsKey("style"))
         {
             var full = merged;
-            bool frosted = Style(full) == "frosted";
             var (r, g, b) = ParseColor(Str(full, "background")) ?? (22, 24, 34);
             double op = Math.Clamp(Num(full, "backgroundOpacity", 0.62), 0, 1);
-            if (frosted) op *= 0.45; // the blur already gives the card body
+            // the blur already gives the card body (the frosted one also gets Windows' own tint)
+            op *= Style(full) switch { "frosted" => 0.45, "snapshot" => 0.8, _ => 1 };
             Var("bg", $"rgba({r},{g},{b},{F(op)})");
             Var("bg-solid", $"rgb({r},{g},{b})"); // the card colour without transparency, for cut-outs and gaps
         }
@@ -114,8 +115,8 @@ static class Appearance
         if (layer.ContainsKey("radius")) Var("radius", F(Math.Clamp(Num(layer, "radius", 16), 0, 64)) + "px");
         if (layer.ContainsKey("padding")) Var("padding", F(Math.Clamp(Num(layer, "padding", 16), 0, 64)) + "px");
         if (layer.ContainsKey("opacity")) Var("opacity", F(Math.Clamp(Num(layer, "opacity", 1), 0.1, 1)));
-        // Not "none": base.css combines this with an inset border in one box-shadow list.
-        if (layer.ContainsKey("shadow") && !Shadow(layer)) Var("shadow", "0 0 0 transparent");
+        // The shadow isn't a variable here: a widget's own "on" couldn't bring back the theme's
+        // shadow once the global tweaks had turned it off. base.css turns it off by data-shadow.
         if (marginDip is int m) Var("margin", m + "px");
         return sb.Append('}').ToString();
     }

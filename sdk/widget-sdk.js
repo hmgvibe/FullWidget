@@ -106,6 +106,9 @@
     root.dataset.theme = state.appearance.theme || "";
     root.dataset.style = state.appearance.style || "transparent";
     root.dataset.shadow = state.appearance.shadow ? "on" : "off";
+    // the snapshot card's blurred picture of what is behind the widget (base.css)
+    if (state.appearance.backdrop) root.style.setProperty("--w-backdrop", `url("${state.appearance.backdrop}")`);
+    else root.style.removeProperty("--w-backdrop");
     root.dataset.locked = String(state.locked);
     root.dataset.layer = state.layer;
     root.dataset.edit = String(state.edit);
